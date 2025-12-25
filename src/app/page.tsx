@@ -2,6 +2,8 @@
 
 import Image from "next/image";
 import { useState } from "react";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 
 export default function Home() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -18,91 +20,11 @@ export default function Home() {
     <div className="flex flex-col w-full min-h-screen bg-[#F3FAF9]">
       {/* Hero Section */}
       <section className="relative w-full bg-[#F3FAF9]">
-        {/* Header */}
-        <header className="flex items-center justify-between px-6 py-4 w-full relative z-50">
-          <div className="flex items-center gap-1">
-        <Image
-              src="/images/logo-6d6ced.png"
-              alt="ReachiWell Logo"
-              width={40}
-              height={40}
-              className="object-contain"
-            />
-            <span className="text-[#0B2220] text-base font-medium leading-[1.275]">ReachiWell</span>
-          </div>
-          <button 
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="w-6 h-6 text-[#000000] z-50"
-            aria-label="Toggle menu"
-          >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M3 12H21M3 6H21M3 18H21" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-            </svg>
-          </button>
-        </header>
-
-        {/* Full Screen Menu */}
-        {isMenuOpen && (
-          <div className="fixed inset-0 bg-[#F3FAF9] z-50 flex flex-col">
-            {/* Menu Header with Logo and Close Button */}
-            <div className="flex items-center justify-between px-6 py-4 w-full">
-              <div className="flex items-center gap-1">
-                <Image
-                  src="/images/logo-6d6ced.png"
-                  alt="ReachiWell Logo"
-                  width={40}
-                  height={40}
-                  className="object-contain"
-                />
-                <span className="text-[#0B2220] text-base font-medium leading-[1.275]">ReachiWell</span>
-              </div>
-              <button 
-                onClick={() => setIsMenuOpen(false)}
-                className="w-6 h-6 text-[#000000] cursor-pointer"
-                aria-label="Close menu"
-              >
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </button>
-            </div>
-
-            {/* Menu Items */}
-            <div className="flex flex-col px-6 pt-8">
-              <button
-                onClick={() => scrollToSection("how-it-works")}
-                className="text-left text-[#0B2220] text-base font-medium leading-[1.275] py-3 hover:text-[#E87954] transition-colors cursor-pointer"
-              >
-                How It Works
-              </button>
-              <button
-                onClick={() => scrollToSection("about-us")}
-                className="text-left text-[#0B2220] text-base font-medium leading-[1.275] py-3 hover:text-[#E87954] transition-colors cursor-pointer"
-              >
-                About Us
-              </button>
-              <button
-                onClick={() => scrollToSection("our-services")}
-                className="text-left text-[#0B2220] text-base font-medium leading-[1.275] py-3 hover:text-[#E87954] transition-colors cursor-pointer"
-              >
-                Our Services
-              </button>
-
-              {/* Login and Signup */}
-              <div className="mt-auto pb-8 flex flex-col gap-4">
-                <a
-                  href="#"
-                  className="text-[#0B2220] text-base font-medium leading-[1.275] py-3 hover:text-[#E87954] transition-colors"
-                >
-                  Login
-                </a>
-                <button className="bg-[#E87954] text-white px-6 py-3 rounded-[30px] text-base font-semibold leading-[1.275] w-full h-[60px] flex items-center justify-center hover:bg-[#d66a45] transition-colors cursor-pointer">
-                  Sign Up
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+        <Header 
+          isMenuOpen={isMenuOpen}
+          setIsMenuOpen={setIsMenuOpen}
+          scrollToSection={scrollToSection}
+        />
 
         {/* Hero Content */}
         <div className="flex flex-col items-center px-6 pt-[88px]">
@@ -395,51 +317,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="w-full bg-[#1B5550] py-10 px-6">
-        <div className="flex flex-col items-start max-w-[345px] mx-auto">
-          {/* Logo */}
-          <div className="flex items-center gap-2.5 mb-[14px]">
-            <Image
-              src="/images/logo-6d6ced.png"
-              alt="ReachiWell Logo"
-              width={64}
-              height={64}
-              className="object-contain"
-            />
-            <span className="text-[#F9F9F9] text-[25.6px] font-medium leading-[1.275]">ReachiWell</span>
-          </div>
-
-          <p className="text-[#F9F9F9] text-base font-normal leading-[1.275] mb-10">
-            Find Care. Get Help. Feel Supported.
-          </p>
-
-          <div className="flex flex-col gap-4 mb-[71px]">
-            <button className="bg-[#FF8968] text-white px-6 py-4 rounded-[30px] text-base font-semibold leading-[1.275] w-[345px] h-[60px] flex items-center justify-center">
-              Start Chat
-            </button>
-            <button className="border-[1.5px] border-[#FF8968] text-[#FF8968] px-6 py-4 rounded-[30px] text-base font-semibold leading-[1.275] w-[345px] h-[60px] flex items-center justify-center">
-              Request a Demo
-            </button>
-          </div>
-
-          <h4 className="text-[#C2D6D4] text-base font-normal leading-[1.275] mb-4">CONTACT US</h4>
-          <p className="text-[#F3FAF9] text-base font-medium leading-[1.275] mb-2">info@reachiwell.ca</p>
-          <p className="text-[#F3FAF9] text-base font-medium leading-[1.275] mb-10">+1 (204) 557 8214</p>
-
-          {/* Divider */}
-          <div className="w-full h-[1.5px] bg-[#F3FAF9] mb-8"></div>
-
-          <p className="text-[#F3FAF9] text-base font-medium leading-[1.275] text-center w-full mb-6">
-            © 2025 ReachiWell. All rights reserved.
-          </p>
-          
-          <p className="text-[#F3FAF9] text-base font-medium leading-normal text-center mb-4">
-            ReachiWell is not a healthcare provider and does not provide medical diagnoses, treatment, or professional medical advice. Our platform is intended to help users in British Columbia and across Canada find and access healthcare services, including clinics, pharmacies, and transportation support. The information provided through ReachiWell is for general guidance only and should not replace consultation with a licensed healthcare professional in Canada. Always seek the advice of a qualified healthcare provider regarding any medical condition or health-related questions.
-          </p>
-
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }
