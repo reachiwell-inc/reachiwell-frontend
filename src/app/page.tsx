@@ -1,12 +1,25 @@
+"use client";
+
 import Image from "next/image";
+import { useState } from "react";
 
 export default function Home() {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  const scrollToSection = (sectionId: string) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth", block: "start" });
+      setIsMenuOpen(false);
+    }
+  };
+
   return (
     <div className="flex flex-col w-full min-h-screen bg-[#F3FAF9]">
       {/* Hero Section */}
       <section className="relative w-full bg-[#F3FAF9]">
         {/* Header */}
-        <header className="flex items-center justify-between px-6 py-4 w-full">
+        <header className="flex items-center justify-between px-6 py-4 w-full relative z-50">
           <div className="flex items-center gap-1">
         <Image
               src="/images/logo-6d6ced.png"
@@ -17,12 +30,79 @@ export default function Home() {
             />
             <span className="text-[#0B2220] text-base font-medium leading-[1.275]">ReachiWell</span>
           </div>
-          <button className="w-6 h-6 text-[#000000]">
+          <button 
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className="w-6 h-6 text-[#000000] z-50"
+            aria-label="Toggle menu"
+          >
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M3 12H21M3 6H21M3 18H21" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
             </svg>
           </button>
         </header>
+
+        {/* Full Screen Menu */}
+        {isMenuOpen && (
+          <div className="fixed inset-0 bg-[#F3FAF9] z-50 flex flex-col">
+            {/* Menu Header with Logo and Close Button */}
+            <div className="flex items-center justify-between px-6 py-4 w-full">
+              <div className="flex items-center gap-1">
+                <Image
+                  src="/images/logo-6d6ced.png"
+                  alt="ReachiWell Logo"
+                  width={40}
+                  height={40}
+                  className="object-contain"
+                />
+                <span className="text-[#0B2220] text-base font-medium leading-[1.275]">ReachiWell</span>
+              </div>
+              <button 
+                onClick={() => setIsMenuOpen(false)}
+                className="w-6 h-6 text-[#000000] cursor-pointer"
+                aria-label="Close menu"
+              >
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </button>
+            </div>
+
+            {/* Menu Items */}
+            <div className="flex flex-col px-6 pt-8">
+              <button
+                onClick={() => scrollToSection("how-it-works")}
+                className="text-left text-[#0B2220] text-base font-medium leading-[1.275] py-3 hover:text-[#E87954] transition-colors cursor-pointer"
+              >
+                How It Works
+              </button>
+              <button
+                onClick={() => scrollToSection("about-us")}
+                className="text-left text-[#0B2220] text-base font-medium leading-[1.275] py-3 hover:text-[#E87954] transition-colors cursor-pointer"
+              >
+                About Us
+              </button>
+              <button
+                onClick={() => scrollToSection("our-services")}
+                className="text-left text-[#0B2220] text-base font-medium leading-[1.275] py-3 hover:text-[#E87954] transition-colors cursor-pointer"
+              >
+                Our Services
+              </button>
+
+              {/* Login and Signup */}
+              <div className="mt-auto pb-8 flex flex-col gap-4">
+                <a
+                  href="#"
+                  className="text-[#0B2220] text-base font-medium leading-[1.275] py-3 hover:text-[#E87954] transition-colors"
+                >
+                  Login
+                </a>
+                <button className="bg-[#E87954] text-white px-6 py-3 rounded-[30px] text-base font-semibold leading-[1.275] w-full h-[60px] flex items-center justify-center hover:bg-[#d66a45] transition-colors cursor-pointer">
+                  Sign Up
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Hero Content */}
         <div className="flex flex-col items-center px-6 pt-[88px]">
@@ -51,7 +131,7 @@ export default function Home() {
       </section>
 
       {/* How It Works Section */}
-      <section className="w-full bg-[#F3FAF9] py-16">
+      <section id="how-it-works" className="w-full bg-[#F3FAF9] py-16">
         <div className="flex flex-col items-center px-6">
           <h2 className="text-[#161818] text-xl font-medium leading-[1.275] text-center mb-2 w-[345px]">
             How It Works
@@ -175,7 +255,7 @@ export default function Home() {
       </section>
 
       {/* About Us Section */}
-      <section className="w-full bg-[#F9F9F9] py-16">
+      <section id="about-us" className="w-full bg-[#F9F9F9] py-16">
         <div className="flex flex-col items-center px-6">
           <h2 className="text-[#161818] text-2xl font-medium leading-[1.275] text-center mb-8 w-[345px]">
             About Us
@@ -210,7 +290,7 @@ export default function Home() {
       </section>
 
       {/* Our Services Section */}
-      <section className="w-full bg-[#F9F9F9] py-16">
+      <section id="our-services" className="w-full bg-[#F9F9F9] py-16">
         <div className="flex flex-col items-center px-6">
           <h2 className="text-[#161818] text-2xl font-medium leading-[1.275] text-center mb-8 w-[345px]">
             Our Services
@@ -351,7 +431,7 @@ export default function Home() {
           <div className="w-full h-[1.5px] bg-[#F3FAF9] mb-8"></div>
 
           <p className="text-[#F3FAF9] text-base font-medium leading-[1.275] text-center w-full mb-6">
-            © Copyright 2025
+            © 2025 ReachiWell. All rights reserved.
           </p>
           
           <p className="text-[#F3FAF9] text-base font-medium leading-normal text-center mb-4">
