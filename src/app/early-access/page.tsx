@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Header from "@/components/Header";
-import Footer from "@/components/Footer";
 
 export default function EarlyAccessPage() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -101,8 +100,6 @@ export default function EarlyAccessPage() {
           )}
         </div>
       </section>
-
-      <Footer />
     </div>
   );
 }
