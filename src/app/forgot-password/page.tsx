@@ -1,12 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
 
 export default function ForgotPasswordPage() {
+  const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [email, setEmail] = useState("");
-  const [isSubmitted, setIsSubmitted] = useState(false);
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
@@ -19,12 +20,8 @@ export default function ForgotPasswordPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // Handle form submission here
-    setIsSubmitted(true);
-    // Reset after 3 seconds
-    setTimeout(() => {
-      setIsSubmitted(false);
-      setEmail("");
-    }, 3000);
+    // Redirect to verify code page
+    router.push("/verify-code");
   };
 
   return (
@@ -70,16 +67,10 @@ export default function ForgotPasswordPage() {
                 type="submit"
                 className="bg-[#E87954] text-white px-6 py-4 rounded-[30px] text-base font-semibold leading-[1.275] w-full h-[60px] flex items-center justify-center hover:bg-[#d66a45] transition-colors mt-4"
               >
-                {isSubmitted ? "Email Sent!" : "Reset password"}
+                Reset password
               </button>
             </div>
           </form>
-
-          {isSubmitted && (
-            <p className="text-[#2D8E86] text-sm font-medium text-center mt-4">
-              Check your email for reset instructions.
-            </p>
-          )}
         </div>
       </section>
     </div>
