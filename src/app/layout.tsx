@@ -3,6 +3,7 @@ import "@fontsource/onest/400.css";
 import "@fontsource/onest/500.css";
 import "@fontsource/onest/600.css";
 import "./globals.css";
+import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
   title: "ReachiWell - Your AI Health Guide",
@@ -20,6 +21,7 @@ export default function RootLayout({
         className="font-sans antialiased"
       >
         {children}
+        <Footer />
       </body>
     </html>
   );

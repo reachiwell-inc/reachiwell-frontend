@@ -30,8 +30,70 @@ export default function Footer() {
         </div>
 
         <h4 className="text-[#C2D6D4] text-base font-normal leading-[1.275] mb-4">CONTACT US</h4>
-        <p className="text-[#F3FAF9] text-base font-medium leading-[1.275] mb-2">info@reachiwell.ca</p>
-        <p className="text-[#F3FAF9] text-base font-medium leading-[1.275] mb-10">+1 (204) 557 8214</p>
+        <p className="text-[#F3FAF9] text-base font-medium leading-[1.275] mb-6">info@reachiwell.ca</p>
+        
+        {/* Social Media Icons */}
+        <div className="flex items-center gap-3 mb-8">
+          {/* Instagram - Orange square with rounded corners */}
+          <a
+            href="#"
+            className="w-8 h-8 flex items-center justify-center hover:opacity-80 transition-opacity"
+            aria-label="Instagram"
+          >
+            <Image
+              src="/icons/instagram-icon.svg"
+              alt="Instagram"
+              width={32}
+              height={32}
+              className="object-contain"
+            />
+          </a>
+          
+          {/* LinkedIn - Orange square with rounded corners */}
+          <a
+            href="#"
+            className="w-8 h-8 flex items-center justify-center hover:opacity-80 transition-opacity"
+            aria-label="LinkedIn"
+          >
+            <Image
+              src="/icons/linkedin-icon.svg"
+              alt="LinkedIn"
+              width={32}
+              height={32}
+              className="object-contain"
+            />
+          </a>
+          
+          {/* X/Twitter - Dark teal background */}
+          <a
+            href="#"
+            className="w-8 h-8 flex items-center justify-center hover:opacity-80 transition-opacity"
+            aria-label="X (Twitter)"
+          >
+            <Image
+              src="/icons/x-icon.svg"
+              alt="X"
+              width={32}
+              height={32}
+              className="object-contain"
+            />
+          </a>
+          
+          {/* Facebook - Orange circle */}
+          <a
+            href="#"
+            className="w-8 h-8 flex items-center justify-center hover:opacity-80 transition-opacity"
+            aria-label="Facebook"
+          >
+            <Image
+              src="/icons/facebook-icon.svg"
+              alt="Facebook"
+              width={32}
+              height={32}
+              className="object-contain"
+            />
+          </a>
+        </div>
 
         {/* Divider */}
         <div className="w-full h-[1.5px] bg-[#F3FAF9] mb-8"></div>
@@ -41,7 +103,7 @@ export default function Footer() {
         </p>
         
         <p className="text-[#F3FAF9] text-base font-medium leading-normal text-center mb-4">
-          ReachiWell is not a healthcare provider and does not provide medical diagnoses, treatment, or professional medical advice. Our platform is intended to help users in British Columbia and across Canada find and access healthcare services, including clinics, pharmacies, and transportation support. The information provided through ReachiWell is for general guidance only and should not replace consultation with a licensed healthcare professional in Canada. Always seek the advice of a qualified healthcare provider regarding any medical condition or health-related questions.
+          ReachiWell is not a healthcare provider and does not provide medical diagnoses, treatment, or professional medical advice. Our platform is intended to help users in British Columbia and across Canada find and access healthcare services, including clinics, pharmacies, and transportation support. The information provided through ReachiWell is for general guidance only and should not replace consultation with a licensed healthcare professional in Canada.
         </p>
       </div>
     </footer>
