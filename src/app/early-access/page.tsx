@@ -5,8 +5,9 @@ import Header from "@/components/Header";
 
 export default function EarlyAccessPage() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
-  const [fullName, setFullName] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
 
   const scrollToSection = (sectionId: string) => {
@@ -24,8 +25,9 @@ export default function EarlyAccessPage() {
     // Reset after 3 seconds
     setTimeout(() => {
       setIsSubmitted(false);
+      setFirstName("");
+      setLastName("");
       setEmail("");
-      setFullName("");
     }, 3000);
   };
 
@@ -51,6 +53,38 @@ export default function EarlyAccessPage() {
           {/* Form */}
           <form onSubmit={handleSubmit} className="w-full max-w-[344px]">
             <div className="flex flex-col gap-6">
+              {/* First Name Field */}
+              <div className="flex flex-col gap-2">
+                <label htmlFor="firstName" className="text-[#0B2220] text-base font-normal leading-normal">
+                  First name
+                </label>
+                <input
+                  id="firstName"
+                  type="text"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  placeholder="Enter your first name"
+                  required
+                  className="w-full px-6 py-4 rounded-[30px] border border-[#E0EEEC] bg-white text-[#0B2220] text-base font-normal focus:outline-none focus:border-[#E87954] focus:ring-2 focus:ring-[#E87954]/20 placeholder:text-[#9CA3AF]"
+                />
+              </div>
+
+              {/* Last Name Field */}
+              <div className="flex flex-col gap-2">
+                <label htmlFor="lastName" className="text-[#0B2220] text-base font-normal leading-normal">
+                  Last name
+                </label>
+                <input
+                  id="lastName"
+                  type="text"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  placeholder="Enter your last name"
+                  required
+                  className="w-full px-6 py-4 rounded-[30px] border border-[#E0EEEC] bg-white text-[#0B2220] text-base font-normal focus:outline-none focus:border-[#E87954] focus:ring-2 focus:ring-[#E87954]/20 placeholder:text-[#9CA3AF]"
+                />
+              </div>
+
               {/* Email Address Field */}
               <div className="flex flex-col gap-2">
                 <label htmlFor="email" className="text-[#0B2220] text-base font-normal leading-normal">
@@ -61,23 +95,7 @@ export default function EarlyAccessPage() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Email address"
-                  required
-                  className="w-full px-6 py-4 rounded-[30px] border border-[#E0EEEC] bg-white text-[#0B2220] text-base font-normal focus:outline-none focus:border-[#E87954] focus:ring-2 focus:ring-[#E87954]/20 placeholder:text-[#9CA3AF]"
-                />
-              </div>
-
-              {/* Full Name Field */}
-              <div className="flex flex-col gap-2">
-                <label htmlFor="fullName" className="text-[#0B2220] text-base font-normal leading-normal">
-                  Full name
-                </label>
-                <input
-                  id="fullName"
-                  type="text"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  placeholder="Full name"
+                  placeholder="Enter your email address"
                   required
                   className="w-full px-6 py-4 rounded-[30px] border border-[#E0EEEC] bg-white text-[#0B2220] text-base font-normal focus:outline-none focus:border-[#E87954] focus:ring-2 focus:ring-[#E87954]/20 placeholder:text-[#9CA3AF]"
                 />
