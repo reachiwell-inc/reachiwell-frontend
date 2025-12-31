@@ -2,8 +2,10 @@
 
 import Image from "next/image";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function ChatPage() {
+  const router = useRouter();
   const [message, setMessage] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -47,7 +49,10 @@ export default function ChatPage() {
 
           {/* Action Buttons */}
           <div className="w-full space-y-4 mb-8">
-            <button className="w-full bg-[#E0EEEC] text-[#545858] px-6 py-4 rounded-full text-base font-medium leading-[1.275] flex items-center justify-between hover:bg-[#D0DEDC] transition-colors active:bg-[#C0CECC]">
+            <button 
+              onClick={() => router.push("/chat/check-symptoms")}
+              className="w-full bg-[#E0EEEC] text-[#545858] px-6 py-4 rounded-full text-base font-medium leading-[1.275] flex items-center justify-between hover:bg-[#D0DEDC] transition-colors active:bg-[#C0CECC]"
+            >
               <span>Check my symptoms</span>
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M7.5 5L12.5 10L7.5 15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
