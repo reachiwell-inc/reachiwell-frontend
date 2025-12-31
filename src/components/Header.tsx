@@ -84,14 +84,17 @@ export default function Header({ isMenuOpen, setIsMenuOpen, scrollToSection }: H
             {/* Login and Signup */}
             <div className="mt-auto pb-8 flex flex-col gap-4">
               <a
-                href="#"
+                href="/login"
                 className="text-[#0B2220] text-base font-medium leading-[1.275] py-3 hover:text-[#E87954] transition-colors"
               >
                 Login
               </a>
-              <button className="bg-[#E87954] text-white px-6 py-3 rounded-[30px] text-base font-semibold leading-[1.275] w-full h-[60px] flex items-center justify-center hover:bg-[#d66a45] transition-colors cursor-pointer">
+              <a
+                href="/create-account"
+                className="bg-[#E87954] text-white px-6 py-3 rounded-[30px] text-base font-semibold leading-[1.275] w-full h-[60px] flex items-center justify-center hover:bg-[#d66a45] transition-colors cursor-pointer"
+              >
                 Sign Up
-              </button>
+              </a>
             </div>
           </div>
         </div>
