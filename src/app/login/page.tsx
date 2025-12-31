@@ -112,10 +112,20 @@ export default function LoginPage() {
                 </div>
               </div>
 
+              {/* Forgot Password Link */}
+              <div className="flex justify-end -mt-2">
+                <a
+                  href="/forgot-password"
+                  className="text-[#E87954] text-sm font-medium hover:underline"
+                >
+                  Forgot password?
+                </a>
+              </div>
+
               {/* Submit Button */}
               <button
                 type="submit"
-                className="bg-[#E87954] text-white px-6 py-4 rounded-[30px] text-base font-semibold leading-[1.275] w-full h-[60px] flex items-center justify-center hover:bg-[#d66a45] transition-colors mt-10"
+                className="bg-[#E87954] text-white px-6 py-4 rounded-[30px] text-base font-semibold leading-[1.275] w-full h-[60px] flex items-center justify-center hover:bg-[#d66a45] transition-colors mt-4"
               >
                 {isSubmitted ? "Logged In!" : "Log in"}
               </button>
