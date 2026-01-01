@@ -4,10 +4,17 @@ import Image from "next/image";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
+type ChatMessage = {
+  type: "user" | "system";
+  content: string;
+};
+
 export default function CheckSymptomsPage() {
   const router = useRouter();
   const [message, setMessage] = useState("");
   const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([]);
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [hasSentSymptoms, setHasSentSymptoms] = useState(false);
 
   const symptoms = [
     "Tooth pain",
@@ -26,11 +33,11 @@ export default function CheckSymptomsPage() {
     );
   };
 
-  // Get the input value: selected symptoms + any typed text
+  // Get the input value: selected symptoms + any typed text (space-separated)
   const getInputValue = () => {
     if (selectedSymptoms.length > 0) {
-      // Join with comma, no comma after the last one
-      const symptomsText = selectedSymptoms.join(", ");
+      // Join with space, not comma
+      const symptomsText = selectedSymptoms.join(" ");
       // If user has typed something additional, append it
       if (message && !selectedSymptoms.some(s => message.includes(s))) {
         return `${symptomsText} ${message}`;
@@ -42,8 +49,8 @@ export default function CheckSymptomsPage() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
-    // Build the expected selected symptoms text (comma-separated, no comma after last)
-    const expectedSelectedText = selectedSymptoms.join(", ");
+    // Build the expected selected symptoms text (space-separated)
+    const expectedSelectedText = selectedSymptoms.join(" ");
     
     // If the input starts with selected symptoms, extract the new typed part
     if (selectedSymptoms.length > 0 && newValue.startsWith(expectedSelectedText)) {
@@ -59,12 +66,62 @@ export default function CheckSymptomsPage() {
     }
   };
 
+  // Check if message looks like a postal code (Canadian format: A1A 1A1 or similar)
+  const isPostalCode = (text: string): boolean => {
+    const postalCodePattern = /^[A-Za-z]\d[A-Za-z]\s?\d[A-Za-z]\d$/;
+    return postalCodePattern.test(text.trim());
+  };
+
+  // Get system response based on user input
+  const getSystemResponse = (userMessage: string): string[] => {
+    if (!hasSentSymptoms) {
+      // First message is symptoms
+      return [
+        "This looks like something a pharmacist can help with.",
+        "Please type in your city or postal code so I can find services near you."
+      ];
+    } else if (isPostalCode(userMessage)) {
+      // User sent postal code
+      // Extract city from postal code (simplified - in real app, would use geocoding API)
+      const cityMap: { [key: string]: string } = {
+        "V5K": "Surrey, BC",
+        "V6B": "Vancouver, BC",
+        "M5H": "Toronto, ON",
+        "H3A": "Montreal, QC",
+      };
+      
+      const prefix = userMessage.trim().substring(0, 3).toUpperCase();
+      const city = cityMap[prefix] || "your area";
+      
+      return [`Got it! I'm looking for resources around ${city}. One moment...`];
+    } else {
+      // Generic response for other messages
+      return ["I understand. Let me help you with that."];
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const inputValue = getInputValue();
     if (inputValue.trim()) {
-      // Handle form submission here
-      console.log("Submitting symptoms:", inputValue);
+      // Add user message to chat
+      setChatMessages(prev => [...prev, { type: "user", content: inputValue.trim() }]);
+      
+      // Track if symptoms have been sent
+      if (!hasSentSymptoms) {
+        setHasSentSymptoms(true);
+      }
+      
+      // Add system response after a short delay (simulate API call)
+      setTimeout(() => {
+        const systemResponses = getSystemResponse(inputValue.trim());
+        systemResponses.forEach((response, index) => {
+          setTimeout(() => {
+            setChatMessages(prev => [...prev, { type: "system", content: response }]);
+          }, index * 500); // Stagger multiple responses
+        });
+      }, 800);
+      
       // Reset after submission
       setMessage("");
       setSelectedSymptoms([]);
@@ -115,30 +172,61 @@ export default function CheckSymptomsPage() {
       {/* Main Content */}
       <div className="flex-1 overflow-y-auto px-6 py-8 pb-[120px]">
         <div className="flex flex-col max-w-[345px] mx-auto">
-          {/* Main Heading */}
-          <h2 className="text-[#333333] text-xl leading-[1.275] mb-2">
-            Tell me what&apos;s going on
-          </h2>
-          <p className="text-[#4F4F4F] text-base font-normal leading-normal mb-6">
-            Type in your symptoms or pick from the list below:
-          </p>
+          {/* Chat Messages */}
+          {chatMessages.length > 0 && (
+            <div className="flex flex-col gap-4 mb-6">
+              {chatMessages.map((msg, index) => (
+                <div
+                  key={index}
+                  className={`flex ${msg.type === "user" ? "justify-end" : "justify-start"}`}
+                >
+                  {msg.type === "user" ? (
+                    <div className="bg-[#599891] text-white px-4 py-3 rounded-full rounded-br-sm max-w-[80%]">
+                      <p className="text-base font-normal leading-normal whitespace-pre-wrap wrap-break-word">
+                        {msg.content}
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="max-w-[80%]">
+                      <p className="text-[#0B2220] text-base font-normal leading-normal">
+                        {msg.content}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
 
-          {/* Symptom Chips */}
-          <div className="flex flex-wrap gap-4 mb-8">
-            {symptoms.map((symptom) => (
-              <button
-                key={symptom}
-                onClick={() => toggleSymptom(symptom)}
-                className={`px-4 py-2 rounded-full text-base font-normal leading-normal transition-colors ${
-                  selectedSymptoms.includes(symptom)
-                    ? "bg-[#EFF6F6] text-[#1E3330] font-medium border border-[#92C3BD]"
-                    : "bg-[#F8F8F8] text-[#545858] border border-[#F8F8F8] hover:bg-[#E0EEEC]"
-                }`}
-              >
-                {symptom}
-              </button>
-            ))}
-          </div>
+          {/* Initial Prompt - Only show if no messages */}
+          {chatMessages.length === 0 && (
+            <>
+              {/* Main Heading */}
+              <h2 className="text-[#333333] text-xl leading-[1.275] mb-2">
+                Tell me what&apos;s going on
+              </h2>
+              <p className="text-[#4F4F4F] text-base font-normal leading-normal mb-6">
+                Type in your symptoms or pick from the list below:
+              </p>
+
+              {/* Symptom Chips */}
+              <div className="flex flex-wrap gap-4 mb-8">
+                {symptoms.map((symptom) => (
+                  <button
+                    key={symptom}
+                    onClick={() => toggleSymptom(symptom)}
+                    className={`px-4 py-2 rounded-full text-base font-normal leading-normal transition-colors ${
+                      selectedSymptoms.includes(symptom)
+                        ? "bg-[#EFF6F6] text-[#1E3330] font-medium border border-[#92C3BD]"
+                        : "bg-[#F8F8F8] text-[#545858] border border-[#F8F8F8] hover:bg-[#E0EEEC]"
+                    }`}
+                  >
+                    {symptom}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
         </div>
       </div>
 
