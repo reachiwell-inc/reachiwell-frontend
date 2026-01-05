@@ -20,7 +20,7 @@ export default function ChatPage() {
       <header className="flex items-center justify-between px-6 py-4 w-full border-b border-[#E0EEEC]">
         <div className="flex items-center gap-1">
           <Image
-            src="/images/logo-6d6ced.png"
+            src="/images/reachiwell-logo.png"
             alt="ReachiWell Logo"
             width={40}
             height={40}
