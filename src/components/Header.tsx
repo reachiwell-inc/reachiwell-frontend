@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 
 interface HeaderProps {
   isMenuOpen: boolean;
@@ -13,16 +14,16 @@ export default function Header({ isMenuOpen, setIsMenuOpen, scrollToSection }: H
     <>
       {/* Header */}
       <header className="flex items-center justify-between px-6 py-4 w-full relative z-50">
-        <div className="flex items-center gap-1">
+        <Link href="/" className="flex items-center gap-1 cursor-pointer hover:opacity-80 transition-opacity">
           <Image
-            src="/images/logo-6d6ced.png"
+            src="/images/reachiwell-logo.png"
             alt="ReachiWell Logo"
             width={40}
             height={40}
             className="object-contain"
           />
           <span className="text-[#0B2220] text-base font-medium leading-[1.275]">ReachiWell</span>
-        </div>
+        </Link>
         <button 
           onClick={() => setIsMenuOpen(!isMenuOpen)}
           className="w-6 h-6 text-[#000000] z-50"
@@ -39,16 +40,16 @@ export default function Header({ isMenuOpen, setIsMenuOpen, scrollToSection }: H
         <div className="fixed inset-0 bg-[#F3FAF9] z-50 flex flex-col">
           {/* Menu Header with Logo and Close Button */}
           <div className="flex items-center justify-between px-6 py-4 w-full">
-            <div className="flex items-center gap-1">
+            <Link href="/" className="flex items-center gap-1 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => setIsMenuOpen(false)}>
               <Image
-                src="/images/logo-6d6ced.png"
+                src="/images/reachiwell-logo.png"
                 alt="ReachiWell Logo"
                 width={40}
                 height={40}
                 className="object-contain"
               />
               <span className="text-[#0B2220] text-base font-medium leading-[1.275]">ReachiWell</span>
-            </div>
+            </Link>
             <button 
               onClick={() => setIsMenuOpen(false)}
               className="w-6 h-6 text-[#000000] cursor-pointer"
