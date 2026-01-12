@@ -84,6 +84,9 @@ export default function CreateAccountPage() {
       });
 
       if (response.success) {
+        // Store user data in localStorage for later use
+        localStorage.setItem("userFirstName", firstName.trim());
+        localStorage.setItem("userLastName", lastName.trim());
         setSuccess(true);
         // Redirect to verify-code page after 2 seconds
         setTimeout(() => {

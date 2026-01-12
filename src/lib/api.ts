@@ -1,33 +1,20 @@
+import type {
+  SignupRequest,
+  SignupSuccessResponse,
+  SignupErrorResponse,
+  SignupResponse,
+  VerifyEmailRequest,
+  VerifyEmailSuccessResponse,
+  VerifyEmailErrorResponse,
+  VerifyEmailResponse,
+  LoginRequest,
+  LoginSuccessResponse,
+  LoginErrorResponse,
+  LoginResponse,
+  LogoutResponse,
+} from "./api.types";
+
 const BASE_URL = "https://reachiwell-git-17355259644.europe-west1.run.app/v1";
-
-export interface SignupRequest {
-  firstName: string;
-  lastName: string;
-  email: string;
-  password: string;
-  phone: string;
-}
-
-export interface SignupSuccessResponse {
-  message: string;
-  data: [];
-  customStatusCode: number;
-}
-
-export interface SignupErrorResponse {
-  message: string | string[];
-  error?: string;
-  statusCode: number;
-}
-
-export interface SignupResponse {
-  success: boolean;
-  message?: string | string[];
-  data?: [];
-  customStatusCode?: number;
-  error?: string;
-  statusCode?: number;
-}
 
 export async function signup(data: SignupRequest): Promise<SignupResponse> {
   try {
@@ -86,31 +73,6 @@ export async function signup(data: SignupRequest): Promise<SignupResponse> {
   }
 }
 
-export interface VerifyEmailRequest {
-  code: string;
-}
-
-export interface VerifyEmailSuccessResponse {
-  message: string;
-  data: [];
-  customStatusCode: number;
-}
-
-export interface VerifyEmailErrorResponse {
-  message: string;
-  error: string;
-  statusCode: number;
-}
-
-export interface VerifyEmailResponse {
-  success: boolean;
-  message?: string;
-  data?: [];
-  customStatusCode?: number;
-  error?: string;
-  statusCode?: number;
-}
-
 export async function verifyEmail(data: VerifyEmailRequest): Promise<VerifyEmailResponse> {
   try {
     const response = await fetch(`${BASE_URL}/users/auth/email/verification`, {
@@ -142,6 +104,80 @@ export async function verifyEmail(data: VerifyEmailRequest): Promise<VerifyEmail
       message: successData.message,
       data: successData.data,
       customStatusCode: successData.customStatusCode,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Network error. Please check your connection and try again.",
+    };
+  }
+}
+
+export async function login(data: LoginRequest): Promise<LoginResponse> {
+  try {
+    const response = await fetch(`${BASE_URL}/users/auth/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email: data.email,
+        password: data.password,
+      }),
+    });
+
+    const responseData: LoginSuccessResponse | LoginErrorResponse = await response.json();
+
+    if (!response.ok) {
+      const errorData = responseData as LoginErrorResponse;
+      return {
+        success: false,
+        message: errorData.message,
+        error: errorData.error || errorData.message,
+        statusCode: errorData.statusCode,
+      };
+    }
+
+    // Success response
+    const successData = responseData as LoginSuccessResponse;
+    return {
+      success: true,
+      message: successData.message,
+      data: successData.data,
+      customStatusCode: successData.customStatusCode,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Network error. Please check your connection and try again.",
+    };
+  }
+}
+
+export async function logout(token: string): Promise<LogoutResponse> {
+  try {
+    const response = await fetch(`${BASE_URL}/users/auth/logout`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ message: "Logout failed" }));
+      return {
+        success: false,
+        message: errorData.message || "Logout failed",
+        error: errorData.message || "Logout failed",
+        statusCode: response.status,
+      };
+    }
+
+    const responseData = await response.json().catch(() => ({ message: "Logout successful" }));
+    return {
+      success: true,
+      message: responseData.message || "Logout successful",
     };
   } catch (error) {
     return {
