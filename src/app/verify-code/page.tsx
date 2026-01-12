@@ -1,12 +1,17 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
+import { verifyEmail } from "@/lib/api";
 
 export default function VerifyCodePage() {
+  const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [codes, setCodes] = useState<string[]>(["", "", "", "", "", ""]);
-  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   const scrollToSection = (sectionId: string) => {
@@ -65,17 +70,35 @@ export default function VerifyCodePage() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const code = codes.join("");
-    if (code.length === 6) {
-      // Handle form submission here
-      setIsSubmitted(true);
-      // Reset after 3 seconds
-      setTimeout(() => {
-        setIsSubmitted(false);
-        setCodes(["", "", "", "", "", ""]);
-      }, 3000);
+    
+    if (code.length !== 6) {
+      setError("Please enter the complete 6-digit code");
+      return;
+    }
+
+    setError("");
+    setSuccess(false);
+    setIsLoading(true);
+
+    try {
+      const response = await verifyEmail({ code });
+
+      if (response.success) {
+        setSuccess(true);
+        // Redirect to login page after 2 seconds
+        setTimeout(() => {
+          router.push("/login");
+        }, 2000);
+      } else {
+        setError(response.error || response.message || "Verification failed. Please try again.");
+      }
+    } catch {
+      setError("An unexpected error occurred. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -127,22 +150,30 @@ export default function VerifyCodePage() {
                 ))}
               </div>
 
+              {/* Error Message */}
+              {error && (
+                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-[30px] text-sm">
+                  {error}
+                </div>
+              )}
+
+              {/* Success Message */}
+              {success && (
+                <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-[30px] text-sm">
+                  Email verified successfully! Redirecting to login...
+                </div>
+              )}
+
               {/* Submit Button */}
               <button
                 type="submit"
-                disabled={codes.join("").length !== 6}
+                disabled={codes.join("").length !== 6 || isLoading}
                 className="bg-[#E87954] text-white px-6 py-4 rounded-[30px] text-base font-semibold leading-[1.275] w-full h-[60px] flex items-center justify-center hover:bg-[#d66a45] transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-4"
               >
-                {isSubmitted ? "Verified!" : "Reset password"}
+                {isLoading ? "Verifying..." : success ? "Verified!" : "Verify Code"}
               </button>
             </div>
           </form>
-
-          {isSubmitted && (
-            <p className="text-[#2D8E86] text-sm font-medium text-center mt-4">
-              Code verified successfully!
-            </p>
-          )}
         </div>
       </section>
     </div>
