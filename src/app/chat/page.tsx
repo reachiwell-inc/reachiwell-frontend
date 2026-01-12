@@ -1,18 +1,97 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { logout } from "@/lib/api";
 
 export default function ChatPage() {
   const router = useRouter();
   const [message, setMessage] = useState("");
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [userInitials, setUserInitials] = useState("LO");
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Check for authentication token and redirect if not logged in
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      router.push("/login");
+      return;
+    }
+    setIsCheckingAuth(false);
+  }, [router]);
+
+  // Get user initials from localStorage
+  useEffect(() => {
+    const firstName = localStorage.getItem("userFirstName") || "";
+    const lastName = localStorage.getItem("userLastName") || "";
+    if (firstName && lastName) {
+      const initials = `${firstName.charAt(0).toUpperCase()}${lastName.charAt(0).toUpperCase()}`;
+      setUserInitials(initials);
+    }
+  }, []);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    if (isDropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isDropdownOpen]);
+
+  const handleLogout = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      // No token, just clear storage and redirect
+      localStorage.removeItem("token");
+      localStorage.removeItem("userFirstName");
+      localStorage.removeItem("userLastName");
+      router.push("/login");
+      return;
+    }
+
+    setIsLoggingOut(true);
+    try {
+      await logout(token);
+    } catch (error) {
+      // Even if logout fails, clear local storage and redirect
+      console.error("Logout error:", error);
+    } finally {
+      // Clear all stored data
+      localStorage.removeItem("token");
+      localStorage.removeItem("userFirstName");
+      localStorage.removeItem("userLastName");
+      setIsLoggingOut(false);
+      router.push("/login");
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // Handle message submission here
     setMessage("");
   };
+
+  // Show loading state while checking authentication
+  if (isCheckingAuth) {
+    return (
+      <div className="flex flex-col w-full min-h-screen bg-white items-center justify-center">
+        <div className="text-[#0B2220] text-base font-normal">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col w-full min-h-screen bg-white">
@@ -28,9 +107,27 @@ export default function ChatPage() {
           />
           <span className="text-[#0B2220] text-base font-medium leading-[1.275]">ReachiWell</span>
         </div>
-        <button className="w-10 h-10 rounded-full bg-[#F3FAF9] border border-[#E0EEEC] flex items-center justify-center text-[#0B2220] text-sm font-medium">
-          LO
-        </button>
+        <div className="relative" ref={dropdownRef}>
+          <button
+            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+            className="w-10 h-10 rounded-full bg-[#F3FAF9] border border-[#E0EEEC] flex items-center justify-center text-[#0B2220] text-sm font-medium hover:bg-[#E0EEEC] transition-colors"
+            aria-label="User menu"
+          >
+            {userInitials}
+          </button>
+          
+          {isDropdownOpen && (
+            <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-[#E0EEEC] z-50">
+              <button
+                onClick={handleLogout}
+                disabled={isLoggingOut}
+                className="w-full px-4 py-3 text-left text-[#0B2220] text-base font-normal hover:bg-[#F3FAF9] transition-colors disabled:opacity-50 disabled:cursor-not-allowed rounded-lg"
+              >
+                {isLoggingOut ? "Logging out..." : "Logout"}
+              </button>
+            </div>
+          )}
+        </div>
       </header>
 
       {/* Chat Content */}

@@ -1,14 +1,19 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
+import { login } from "@/lib/api";
 
 export default function LoginPage() {
+  const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
@@ -18,16 +23,41 @@ export default function LoginPage() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission here
-    setIsSubmitted(true);
-    // Reset after 3 seconds
-    setTimeout(() => {
-      setIsSubmitted(false);
-      setEmail("");
-      setPassword("");
-    }, 3000);
+    setError("");
+    setSuccess(false);
+
+    // Basic validation
+    if (!email.trim() || !password.trim()) {
+      setError("Please enter both email and password");
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const response = await login({
+        email: email.trim(),
+        password: password,
+      });
+
+      if (response.success && response.data?.token) {
+        // Store token in localStorage
+        localStorage.setItem("token", response.data.token);
+        setSuccess(true);
+        // Redirect to chat page after 1 second
+        setTimeout(() => {
+          router.push("/chat");
+        }, 1000);
+      } else {
+        setError(response.error || response.message || "Login failed. Please try again.");
+      }
+    } catch {
+      setError("An unexpected error occurred. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -122,21 +152,30 @@ export default function LoginPage() {
                 </a>
               </div>
 
+              {/* Error Message */}
+              {error && (
+                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-[30px] text-sm">
+                  {error}
+                </div>
+              )}
+
+              {/* Success Message */}
+              {success && (
+                <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-[30px] text-sm">
+                  Login successful! Redirecting...
+                </div>
+              )}
+
               {/* Submit Button */}
               <button
                 type="submit"
-                className="bg-[#E87954] text-white px-6 py-4 rounded-[30px] text-base font-semibold leading-[1.275] w-full h-[60px] flex items-center justify-center hover:bg-[#d66a45] transition-colors mt-4"
+                disabled={isLoading}
+                className="bg-[#E87954] text-white px-6 py-4 rounded-[30px] text-base font-semibold leading-[1.275] w-full h-[60px] flex items-center justify-center hover:bg-[#d66a45] transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-4"
               >
-                {isSubmitted ? "Logged In!" : "Log in"}
+                {isLoading ? "Logging in..." : success ? "Logged In!" : "Log in"}
               </button>
             </div>
           </form>
-
-          {isSubmitted && (
-            <p className="text-[#2D8E86] text-sm font-medium text-center mt-4">
-              Welcome back!
-            </p>
-          )}
         </div>
       </section>
     </div>
