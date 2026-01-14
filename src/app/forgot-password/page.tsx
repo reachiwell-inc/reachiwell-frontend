@@ -3,11 +3,14 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
+import { forgotPassword } from "@/lib/api";
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [email, setEmail] = useState("");
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
@@ -17,11 +20,42 @@ export default function ForgotPasswordPage() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const validateEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission here
-    // Redirect to verify code page
-    router.push("/verify-code");
+    setError("");
+
+    // Validate email
+    if (!email.trim()) {
+      setError("Email address is required");
+      return;
+    }
+
+    if (!validateEmail(email)) {
+      setError("Please enter a valid email address");
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const response = await forgotPassword({ email });
+
+      if (response.success) {
+        // Redirect to forgot password verify code page on success
+        router.push("/forgot-password-verify-code");
+      } else {
+        setError(response.error || response.message || "Failed to send password reset email. Please try again.");
+      }
+    } catch {
+      setError("An unexpected error occurred. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -55,19 +89,28 @@ export default function ForgotPasswordPage() {
                   id="email"
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    setError(""); // Clear error when user types
+                  }}
                   placeholder="Email address"
                   required
-                  className="w-full px-6 py-4 rounded-[30px] border border-[#C2D6D4] text-[#0B2220] text-base font-normal focus:outline-none focus:border-[#E87954] focus:ring-2 focus:ring-[#E87954]/20 placeholder:text-[#9CA3AF]"
+                  className={`w-full px-6 py-4 rounded-[30px] border text-[#0B2220] text-base font-normal focus:outline-none focus:ring-2 focus:ring-[#E87954]/20 placeholder:text-[#9CA3AF] ${
+                    error ? "border-red-500 focus:border-red-500" : "border-[#C2D6D4] focus:border-[#E87954]"
+                  }`}
                 />
+                {error && (
+                  <p className="text-red-500 text-sm font-normal mt-1">{error}</p>
+                )}
               </div>
 
               {/* Submit Button */}
               <button
                 type="submit"
-                className="bg-[#E87954] text-white px-6 py-4 rounded-[30px] text-base font-semibold leading-[1.275] w-full h-[60px] flex items-center justify-center hover:bg-[#d66a45] transition-colors mt-4"
+                disabled={isLoading}
+                className="bg-[#E87954] text-white px-6 py-4 rounded-[30px] text-base font-semibold leading-[1.275] w-full h-[60px] flex items-center justify-center hover:bg-[#d66a45] transition-colors mt-4 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Reset password
+                {isLoading ? "Sending..." : "Reset password"}
               </button>
             </div>
           </form>

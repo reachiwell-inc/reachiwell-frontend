@@ -12,6 +12,14 @@ import type {
   LoginErrorResponse,
   LoginResponse,
   LogoutResponse,
+  ForgotPasswordRequest,
+  ForgotPasswordSuccessResponse,
+  ForgotPasswordErrorResponse,
+  ForgotPasswordResponse,
+  ValidateResetCodeRequest,
+  ValidateResetCodeSuccessResponse,
+  ValidateResetCodeErrorResponse,
+  ValidateResetCodeResponse,
 } from "./api.types";
 
 const BASE_URL = "https://reachiwell-git-17355259644.europe-west1.run.app/v1";
@@ -178,6 +186,83 @@ export async function logout(token: string): Promise<LogoutResponse> {
     return {
       success: true,
       message: responseData.message || "Logout successful",
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Network error. Please check your connection and try again.",
+    };
+  }
+}
+
+export async function forgotPassword(data: ForgotPasswordRequest): Promise<ForgotPasswordResponse> {
+  try {
+    const response = await fetch(`${BASE_URL}/users/auth/forgot-password`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email: data.email,
+      }),
+    });
+
+    const responseData: ForgotPasswordSuccessResponse | ForgotPasswordErrorResponse = await response.json();
+
+    if (!response.ok) {
+      const errorData = responseData as ForgotPasswordErrorResponse;
+      return {
+        success: false,
+        message: errorData.message,
+        error: errorData.error || errorData.message,
+        statusCode: errorData.statusCode,
+      };
+    }
+
+    // Success response
+    const successData = responseData as ForgotPasswordSuccessResponse;
+    return {
+      success: true,
+      message: successData.message,
+      data: successData.data,
+      customStatusCode: successData.customStatusCode,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Network error. Please check your connection and try again.",
+    };
+  }
+}
+
+export async function validateResetCode(data: ValidateResetCodeRequest): Promise<ValidateResetCodeResponse> {
+  try {
+    const response = await fetch(`${BASE_URL}/users/auth/validate-reset-code/${data.passwordResetCode}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    const responseData: ValidateResetCodeSuccessResponse | ValidateResetCodeErrorResponse = await response.json();
+
+    if (!response.ok) {
+      const errorData = responseData as ValidateResetCodeErrorResponse;
+      return {
+        success: false,
+        message: errorData.message,
+        error: errorData.error || errorData.message,
+        statusCode: errorData.statusCode,
+      };
+    }
+
+    // Success response
+    const successData = responseData as ValidateResetCodeSuccessResponse;
+    return {
+      success: true,
+      message: successData.message,
+      data: successData.data,
+      customStatusCode: successData.customStatusCode,
     };
   } catch (error) {
     return {
