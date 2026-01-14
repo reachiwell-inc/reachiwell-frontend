@@ -88,10 +88,10 @@ export default function CreateAccountPage() {
         localStorage.setItem("userFirstName", firstName.trim());
         localStorage.setItem("userLastName", lastName.trim());
         setSuccess(true);
-        // Redirect to verify-code page after 2 seconds
+        // Redirect to signup-verify-code page after 2 seconds
         setTimeout(() => {
-          router.push("/verify-code");
-        }, 2000);
+          router.push("/signup-verify-code");
+        }, 1000);
       } else {
         // Handle error message - could be string or array
         const errorMessage = response.error || 

@@ -93,3 +93,55 @@ export interface LogoutResponse {
   statusCode?: number;
 }
 
+// Forgot Password API Types
+export interface ForgotPasswordRequest {
+  email: string;
+}
+
+export interface ForgotPasswordSuccessResponse {
+  message: string;
+  data: [];
+  customStatusCode: number;
+}
+
+export interface ForgotPasswordErrorResponse {
+  message: string;
+  error?: string;
+  statusCode: number;
+}
+
+export interface ForgotPasswordResponse {
+  success: boolean;
+  message?: string;
+  data?: [];
+  customStatusCode?: number;
+  error?: string;
+  statusCode?: number;
+}
+
+// Password Reset Code Validation API Types
+export interface ValidateResetCodeRequest {
+  passwordResetCode: string;
+}
+
+export interface ValidateResetCodeSuccessResponse {
+  message: string;
+  data: [];
+  customStatusCode: number;
+}
+
+export interface ValidateResetCodeErrorResponse {
+  message: string;
+  error?: string;
+  statusCode: number;
+}
+
+export interface ValidateResetCodeResponse {
+  success: boolean;
+  message?: string;
+  data?: [];
+  customStatusCode?: number;
+  error?: string;
+  statusCode?: number;
+}
+
