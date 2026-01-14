@@ -36,7 +36,8 @@ export default function Footer() {
         <div className="flex items-center gap-3 mb-8">
           {/* Instagram - Orange square with rounded corners */}
           <a
-            href="#"
+            href="https://www.instagram.com/reachiwell"
+            target="_blank"
             className="w-8 h-8 flex items-center justify-center hover:opacity-80 transition-opacity"
             aria-label="Instagram"
           >
@@ -51,7 +52,8 @@ export default function Footer() {
           
           {/* LinkedIn - Orange square with rounded corners */}
           <a
-            href="#"
+            href="https://www.linkedin.com/company/reachiwell/"
+            target="_blank"
             className="w-8 h-8 flex items-center justify-center hover:opacity-80 transition-opacity"
             aria-label="LinkedIn"
           >
@@ -66,7 +68,8 @@ export default function Footer() {
           
           {/* X/Twitter - Dark teal background */}
           <a
-            href="#"
+            href="https://x.com/reachiwell"
+            target="_blank"
             className="w-8 h-8 flex items-center justify-center hover:opacity-80 transition-opacity"
             aria-label="X (Twitter)"
           >
@@ -81,7 +84,8 @@ export default function Footer() {
           
           {/* Facebook - Orange circle */}
           <a
-            href="#"
+            href="https://www.facebook.com/people/ReachiWell-Inc/61578907934731/"
+            target="_blank"
             className="w-8 h-8 flex items-center justify-center hover:opacity-80 transition-opacity"
             aria-label="Facebook"
           >
