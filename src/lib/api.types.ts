@@ -145,3 +145,30 @@ export interface ValidateResetCodeResponse {
   statusCode?: number;
 }
 
+// Reset Password API Types
+export interface ResetPasswordRequest {
+  passwordResetCode: string;
+  newPassword: string;
+}
+
+export interface ResetPasswordSuccessResponse {
+  message: string;
+  data: [];
+  customStatusCode: number;
+}
+
+export interface ResetPasswordErrorResponse {
+  message: string;
+  error?: string;
+  statusCode: number;
+}
+
+export interface ResetPasswordResponse {
+  success: boolean;
+  message?: string;
+  data?: [];
+  customStatusCode?: number;
+  error?: string;
+  statusCode?: number;
+}
+

@@ -20,6 +20,10 @@ import type {
   ValidateResetCodeSuccessResponse,
   ValidateResetCodeErrorResponse,
   ValidateResetCodeResponse,
+  ResetPasswordRequest,
+  ResetPasswordSuccessResponse,
+  ResetPasswordErrorResponse,
+  ResetPasswordResponse,
 } from "./api.types";
 
 const BASE_URL = "https://reachiwell-git-17355259644.europe-west1.run.app/v1";
@@ -258,6 +262,47 @@ export async function validateResetCode(data: ValidateResetCodeRequest): Promise
 
     // Success response
     const successData = responseData as ValidateResetCodeSuccessResponse;
+    return {
+      success: true,
+      message: successData.message,
+      data: successData.data,
+      customStatusCode: successData.customStatusCode,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Network error. Please check your connection and try again.",
+    };
+  }
+}
+
+export async function resetPassword(data: ResetPasswordRequest): Promise<ResetPasswordResponse> {
+  try {
+    const response = await fetch(`${BASE_URL}/users/auth/reset-password`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        code: data.passwordResetCode,
+        password: data.newPassword,
+      }),
+    });
+
+    const responseData: ResetPasswordSuccessResponse | ResetPasswordErrorResponse = await response.json();
+
+    if (!response.ok) {
+      const errorData = responseData as ResetPasswordErrorResponse;
+      return {
+        success: false,
+        message: errorData.message,
+        error: errorData.error || errorData.message,
+        statusCode: errorData.statusCode,
+      };
+    }
+
+    // Success response
+    const successData = responseData as ResetPasswordSuccessResponse;
     return {
       success: true,
       message: successData.message,

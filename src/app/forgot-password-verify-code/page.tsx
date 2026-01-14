@@ -22,11 +22,11 @@ export default function ForgotPasswordVerifyCodePage() {
     const response = await validateResetCode({ passwordResetCode: code });
     
     if (response.success) {
-      // TODO: Redirect to reset password page when it's created
-      // For now, redirect to login
+      // Store reset code in localStorage and redirect to reset password page
+      localStorage.setItem("passwordResetCode", code);
       setTimeout(() => {
-        router.push("/login");
-      }, 2000);
+        router.push(`/reset-password?code=${code}`);
+      }, 1000);
     }
     
     return {
