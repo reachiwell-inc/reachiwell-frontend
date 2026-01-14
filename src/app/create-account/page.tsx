@@ -148,7 +148,7 @@ export default function CreateAccountPage() {
                   type="text"
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
-                  placeholder="Enter your full name"
+                  placeholder="Enter your first name"
                   required
                   className="w-full px-6 py-4 rounded-[30px] border border-[#C2D6D4] text-[#0B2220] text-base font-normal focus:outline-none focus:border-[#E87954] focus:ring-2 focus:ring-[#E87954]/20 placeholder:text-[#9CA3AF]"
                 />
@@ -164,7 +164,7 @@ export default function CreateAccountPage() {
                   type="text"
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
-                  placeholder="Enter your full name"
+                  placeholder="Enter your last name"
                   required
                   className="w-full px-6 py-4 rounded-[30px] border border-[#C2D6D4] text-[#0B2220] text-base font-normal focus:outline-none focus:border-[#E87954] focus:ring-2 focus:ring-[#E87954]/20 placeholder:text-[#9CA3AF]"
                 />
