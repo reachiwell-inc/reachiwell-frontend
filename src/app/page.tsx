@@ -19,26 +19,29 @@ export default function Home() {
     <div className="flex flex-col w-full min-h-screen bg-[#F3FAF9]">
       {/* Hero Section */}
       <section className="relative w-full bg-[#F3FAF9]">
-        <Header 
+        <Header
           isMenuOpen={isMenuOpen}
           setIsMenuOpen={setIsMenuOpen}
           scrollToSection={scrollToSection}
         />
 
         {/* Hero Content */}
-        <div className="flex flex-col items-center px-6 pt-[88px]">
-          <h1 className="text-[#161818] text-2xl font-semibold leading-[1.275] text-center mb-6 w-[345px]">
-            Your AI Health Guide — Fast, Simple, Anywhere
-          </h1>
-          <p className="text-[#414747] text-base font-normal leading-normal text-center mb-8 w-[345px]">
-            Get triaged, find care, and arrange transport in minutes.
-          </p>
-          <button className="bg-[#E87954] text-white px-6 py-4 rounded-[30px] text-base font-semibold leading-[1.275] w-[344px] h-[60px] flex items-center justify-center">
-            Try the Chatbot
-          </button>
-          
-          {/* Phone Mockup - 75% height */}
-          <div className="mt-6 w-[345px] h-[500px] overflow-hidden relative">
+        <div className="flex flex-col items-center px-6 md:px-12 lg:px-24 pt-[88px] pb-16 md:pb-24 max-w-7xl mx-auto">
+          {/* Text Content - Centered */}
+          <div className="flex flex-col items-center text-center mb-8 md:mb-12 max-w-4xl">
+            <h1 className="text-[#161818] text-2xl md:text-4xl lg:text-5xl font-semibold leading-[1.275] mb-6">
+              Your AI Health Guide — Fast, Simple, Anywhere
+            </h1>
+            <p className="text-[#414747] text-base md:text-lg lg:text-xl font-normal leading-normal mb-8">
+              Get triaged, find care, and arrange transport in minutes.
+            </p>
+            <button className="bg-[#E87954] text-white px-6 py-4 rounded-[30px] text-base font-semibold leading-[1.275] w-[344px] h-[60px] flex items-center justify-center mb-6 md:mb-16">
+              Start Chat
+            </button>
+          </div>
+
+          {/* Phone Mockup - Centered Below */}
+          <div className="w-[345px] md:w-[345px] lg:w-[345px] h-[500px] md:h-[500px] lg:h-[500px] overflow-hidden relative">
             <Image
               src="/images/phone-mockup.png"
               alt="ReachiWell App Preview"
