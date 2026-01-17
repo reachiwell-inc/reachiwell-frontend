@@ -55,51 +55,54 @@ export default function Home() {
       </section>
 
       {/* How It Works Section */}
-      <section id="how-it-works" className="w-full bg-[#F3FAF9] py-16">
-        <div className="flex flex-col items-center px-6">
-          <h2 className="text-[#161818] text-xl font-medium leading-[1.275] text-center mb-2 w-[345px]">
+      <section id="how-it-works" className="w-full bg-[#F3FAF9] py-16 md:py-24">
+        <div className="flex flex-col items-center px-6 md:px-12 lg:px-24 max-w-7xl mx-auto">
+          <h2 className="text-[#161818] text-xl md:text-3xl lg:text-4xl font-medium leading-[1.275] text-center mb-2 w-full md:w-auto">
             How It Works
           </h2>
-          <p className="text-[#414747] text-base font-normal leading-normal text-center mb-6 w-[345px]">
+          <p className="text-[#414747] text-base md:text-lg font-normal leading-normal text-center mb-12 md:mb-16 w-full md:w-auto">
             Get started with 3 easy steps.
           </p>
 
-          {/* Step 1 */}
-          <div className="bg-[#FDFEFD] border border-[#E0EEEC] rounded-[20px] w-[345px] h-[375px] mb-6 flex flex-col items-center pt-8">
-            <h3 className="text-[#161818] text-base font-medium leading-[1.275] text-center">Chat with AI</h3>
-            <div className="w-[265px] h-[265px] relative mb-4">
-              <Image
-                src="/images/step1-chat.png"
-                alt="Chat with AI"
-                fill
-                className="object-cover"
-              />
+          {/* Steps Grid - Desktop: 3 columns, Mobile: 1 column */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 w-full lg:max-w-none">
+            {/* Step 1 */}
+            <div className="bg-[#FDFEFD] border border-[#E0EEEC] rounded-[20px] w-max-[345px] h-max-[375px] flex flex-col items-center pt-8">
+              <h3 className="text-[#161818] text-base font-medium leading-[1.275] text-center">Chat with AI</h3>
+              <div className="w-[265px] h-[265px] relative mb-4">
+                <Image
+                  src="/images/step1-chat.png"
+                  alt="Chat with AI"
+                  fill
+                  className="object-cover"
+                />
+              </div>
             </div>
-          </div>
 
-          {/* Step 2 */}
-          <div className="bg-[#FDFEFD] border border-[#E0EEEC] rounded-[20px] w-[345px] h-[375px] mb-6 flex flex-col items-center pt-8">
-            <h3 className="text-[#161818] text-base font-medium leading-[1.275] text-center">Get Options</h3>
-            <div className="w-[265px] h-[265px] relative mb-4">
-              <Image
-                src="/images/step2-options.png"
-                alt="Get Options"
-                fill
-                className="object-cover"
-              />
+            {/* Step 2 */}
+            <div className="bg-[#FDFEFD] border border-[#E0EEEC] rounded-[20px] w-max-[345px] h-max-[375px] flex flex-col items-center pt-8">
+              <h3 className="text-[#161818] text-base font-medium leading-[1.275] text-center">Get Options</h3>
+              <div className="w-[265px] h-[265px] relative mb-4">
+                <Image
+                  src="/images/step2-options.png"
+                  alt="Get Options"
+                  fill
+                  className="object-cover"
+                />
+              </div>
             </div>
-          </div>
 
-          {/* Step 3 */}
-          <div className="bg-[#FDFEFD] border border-[#E0EEEC] rounded-[20px] w-[345px] h-[375px] flex flex-col items-center pt-8">
-            <h3 className="text-[#161818] text-base font-medium leading-[1.275] text-center">Arrange Care</h3>
-            <div className="w-[265px] h-[265px] relative mb-4">
-              <Image
-                src="/images/step3-care.png"
-                alt="Arrange Care"
-                fill
-                className="object-cover"
-              />
+            {/* Step 3 */}
+            <div className="bg-[#FDFEFD] border border-[#E0EEEC] rounded-[20px] w-max-[345px] h-max-[375px] flex flex-col items-center pt-8">
+              <h3 className="text-[#161818] text-base font-medium leading-[1.275] text-center">Arrange Care</h3>
+              <div className="w-[265px] h-[265px] relative mb-4">
+                <Image
+                  src="/images/step3-care.png"
+                  alt="Arrange Care"
+                  fill
+                  className="object-cover"
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -107,20 +110,22 @@ export default function Home() {
 
       {/* Live Chat Interface Section */}
       <section className="w-full bg-[#FEFEFE] py-16">
-        <div className="flex flex-col items-center px-6">
-          <h2 className="text-[#161818] text-xl font-medium leading-[1.275] text-center mb-4 w-[345px]">
+        <div className="flex flex-col items-center px-6  md:px-12 lg:px-24 max-w-7xl mx-auto">
+          <h2 className="text-[#161818] text-xl font-medium leading-[1.275] text-center mb-4 w-full md:w-auto">
             Live Chat Interface
           </h2>
-          <p className="text-[#414747] text-base font-normal leading-normal text-center mb-10 w-[345px]">
+          <p className="text-[#414747] text-base font-normal leading-normal text-center mb-10 w-full md:w-auto lg:w-[600px]">
             Our AI chatbot helps you check symptoms, find nearby care, and book rides, all in one chat.
           </p>
 
-          <button className="bg-[#E87954] text-white px-6 py-4 rounded-[30px] text-base font-semibold leading-[1.275] w-[344px] h-[60px] flex items-center justify-center mb-6">
+          <button className="bg-[#E87954] text-white px-6 py-4 rounded-[30px] text-base font-semibold leading-[1.275] w-[344px] h-[60px] flex items-center justify-center mb-6 md:mb-16">
             Start Chat
           </button>
 
           {/* Features */}
-          <div className="w-full max-w-[345px] space-y-6">
+          {/* <div className="w-full max-w-[345px] space-y-6"> */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 w-full md:max-w-none">
+
             {/* Feature 1 - LockKey icon */}
             <div className="bg-[#F3FAF9] border border-[#E0EEEC] rounded-[20px] p-6 flex flex-col items-start gap-4">
               <div className="w-6 h-6 shrink-0">
@@ -150,7 +155,7 @@ export default function Home() {
             </div>
 
             {/* Feature 3 - Toolbox icon */}
-            <div className="bg-[#F3FAF9] border border-[#E0EEEC] rounded-[20px] p-6 mb-10 flex flex-col items-start gap-4">
+            <div className="bg-[#F3FAF9] border border-[#E0EEEC] rounded-[20px] p-6 flex flex-col items-start gap-4">
               <div className="w-6 h-6 shrink-0">
                 <Image
                   src="/icons/toolbox.svg"
@@ -166,7 +171,7 @@ export default function Home() {
             </div>
 
             {/* Chat Image */}
-            <div className="max-w-[345px] h-[345px] relative mb-8">
+            <div className="max-w-[345px] h-[345px] relative mb-8 md:hidden">
               <Image
                 src="/images/chat-interface.png"
                 alt="Live Chat Interface"
@@ -180,12 +185,12 @@ export default function Home() {
 
       {/* About Us Section */}
       <section id="about-us" className="w-full bg-[#F9F9F9] py-16">
-        <div className="flex flex-col items-center px-6">
-          <h2 className="text-[#161818] text-2xl font-medium leading-[1.275] text-center mb-8 w-[345px]">
+        <div className="flex flex-col items-center px-6 md:px-12 lg:px-24 max-w-7xl mx-auto">
+          <h2 className="text-[#161818] text-2xl font-medium leading-[1.275] text-center mb-8 w-max-[345px]">
             About Us
           </h2>
 
-          <div className="w-full max-w-[345px] space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 w-full md:max-w-none">
             {/* Mission */}
             <div className="bg-[#F3FAF9] border border-[#E0EEEC] rounded-[20px] p-6">
               <h3 className="text-[#0B2220] text-base font-medium leading-[1.275] mb-4">Mission</h3>
@@ -215,12 +220,12 @@ export default function Home() {
 
       {/* Our Services Section */}
       <section id="our-services" className="w-full bg-[#F9F9F9] py-16">
-        <div className="flex flex-col items-center px-6">
+        <div className="flex flex-col items-center px-6 md:px-12 lg:px-24 max-w-7xl mx-auto">
           <h2 className="text-[#161818] text-2xl font-medium leading-[1.275] text-center mb-8 w-[345px]">
             Our Services
           </h2>
 
-          <div className="w-full max-w-[345px] space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 w-full md:max-w-none">
             {/* For Patients */}
             <div className="bg-[#F3FAF9] border border-[#E0EEEC] rounded-[20px] p-6">
               <div className="flex flex-col gap-2 mb-4">
@@ -297,23 +302,23 @@ export default function Home() {
                 />
               </button>
             </div>
+          </div>
 
-            {/* CTA Card */}
-            <div className="bg-[#E0EEEC] border border-[#E0EEEC] rounded-[20px] px-6 py-10">
-              <h3 className="text-[#0B2220] text-2xl font-medium text-center leading-[1.275] mb-4">
-                Be Part of the Future of Care Access.
-              </h3>
-              <p className="text-[#414747] text-base font-normal text-center leading-normal mb-10">
-                Help us shape smarter, faster healthcare navigation for everyone.
-              </p>
-              <div className="flex flex-col gap-4">
-                <button className="bg-[#E87954] text-white px-6 py-4 rounded-[30px] text-base font-semibold leading-[1.275] w-full h-[60px] flex items-center justify-center">
-                  Start Chat
-                </button>
-                <button className="border-[1.5px] border-[#E87954] text-[#E87954] px-6 py-4 rounded-[30px] text-base font-semibold leading-[1.275] w-full h-[60px] flex items-center justify-center">
-                  Request a Demo
-                </button>
-              </div>
+          {/* CTA Card - Full Width */}
+          <div className="bg-[#E0EEEC] border border-[#E0EEEC] rounded-[20px] px-6 py-10 md:px-12 md:py-12 lg:px-16 lg:py-16 w-full mt-8 md:mt-12">
+            <h3 className="text-[#0B2220] text-2xl font-medium text-center leading-[1.275] mb-4">
+              Be Part of the Future of Care Access.
+            </h3>
+            <p className="text-[#414747] text-base font-normal text-center leading-normal mb-10">
+              Help us shape smarter, faster healthcare navigation for everyone.
+            </p>
+            <div className="flex flex-col md:flex-row gap-4 md:gap-6 justify-center items-center max-w-md md:max-w-none mx-auto">
+              <button className="bg-[#E87954] text-white px-6 py-4 rounded-[30px] text-base font-semibold leading-[1.275] w-full lg:w-[240px] md:w-auto md:px-8 h-[60px] flex items-center justify-center hover:bg-[#d66a45] transition-colors">
+                Start Chat
+              </button>
+              <button className="bg-white border-[1.5px] border-[#E87954] text-[#E87954] px-6 py-4 rounded-[30px] text-base font-semibold leading-[1.275] w-full lg:w-[240px] md:w-auto md:px-8 h-[60px] flex items-center justify-center hover:bg-[#F3FAF9] transition-colors">
+                Request a Demo
+              </button>
             </div>
           </div>
         </div>
