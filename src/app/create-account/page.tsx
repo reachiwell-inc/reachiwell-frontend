@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import { signup } from "@/lib/api";
+import { validatePassword } from "@/lib/validation";
 
 export default function CreateAccountPage() {
   const router = useRouter();
@@ -57,32 +58,9 @@ export default function CreateAccountPage() {
     if (!password) {
       validationErrors.push("Password is required");
     } else {
-      // Password validation based on regex: /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,}$/
-      // Requirements:
-      // - At least one digit (0-9)
-      // - At least one lowercase letter (a-z)
-      // - At least one uppercase letter (A-Z)
-      // - At least 6 characters long
-      const passwordErrors: string[] = [];
-
-      if (password.length < 6) {
-        passwordErrors.push("at least 6 characters long");
-      }
-
-      if (!/\d/.test(password)) {
-        passwordErrors.push("at least one number (0-9)");
-      }
-
-      if (!/[a-z]/.test(password)) {
-        passwordErrors.push("at least one lowercase letter (a-z)");
-      }
-
-      if (!/[A-Z]/.test(password)) {
-        passwordErrors.push("at least one uppercase letter (A-Z)");
-      }
-
-      if (passwordErrors.length > 0) {
-        validationErrors.push(`Password must contain: ${passwordErrors.join(", ")}`);
+      const passwordValidation = validatePassword(password);
+      if (!passwordValidation.isValid && passwordValidation.errorMessage) {
+        validationErrors.push(passwordValidation.errorMessage);
       }
     }
 

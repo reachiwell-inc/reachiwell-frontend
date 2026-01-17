@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Header from "@/components/Header";
 import { resetPassword } from "@/lib/api";
+import { validatePassword } from "@/lib/validation";
 
 function ResetPasswordForm() {
   const router = useRouter();
@@ -53,32 +54,9 @@ function ResetPasswordForm() {
       return;
     }
 
-    // Password validation based on regex: /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,}$/
-    // Requirements:
-    // - At least one digit (0-9)
-    // - At least one lowercase letter (a-z)
-    // - At least one uppercase letter (A-Z)
-    // - At least 6 characters long
-    const passwordErrors: string[] = [];
-
-    if (password.length < 6) {
-      passwordErrors.push("at least 6 characters long");
-    }
-
-    if (!/\d/.test(password)) {
-      passwordErrors.push("at least one number (0-9)");
-    }
-
-    if (!/[a-z]/.test(password)) {
-      passwordErrors.push("at least one lowercase letter (a-z)");
-    }
-
-    if (!/[A-Z]/.test(password)) {
-      passwordErrors.push("at least one uppercase letter (A-Z)");
-    }
-
-    if (passwordErrors.length > 0) {
-      setError(`Password must contain: ${passwordErrors.join(", ")}`);
+    const passwordValidation = validatePassword(password);
+    if (!passwordValidation.isValid && passwordValidation.errorMessage) {
+      setError(passwordValidation.errorMessage);
       return;
     }
 
