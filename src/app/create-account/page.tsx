@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import { signup } from "@/lib/api";
+import { validatePassword } from "@/lib/validation";
 
 export default function CreateAccountPage() {
   const router = useRouter();
@@ -56,8 +57,11 @@ export default function CreateAccountPage() {
 
     if (!password) {
       validationErrors.push("Password is required");
-    } else if (password.length < 6) {
-      validationErrors.push("Password must be at least 6 characters long");
+    } else {
+      const passwordValidation = validatePassword(password);
+      if (!passwordValidation.isValid && passwordValidation.errorMessage) {
+        validationErrors.push(passwordValidation.errorMessage);
+      }
     }
 
     if (!confirmPassword) {

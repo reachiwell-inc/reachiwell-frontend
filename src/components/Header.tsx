@@ -13,7 +13,8 @@ export default function Header({ isMenuOpen, setIsMenuOpen, scrollToSection }: H
   return (
     <>
       {/* Header */}
-      <header className="flex items-center justify-between px-6 py-4 w-full relative z-50">
+      <header className="flex items-center justify-between px-6 py-4 w-full relative z-50 bg-[#F3FAF9]">
+        {/* Logo - Left */}
         <Link href="/" className="flex items-center gap-1 cursor-pointer hover:opacity-80 transition-opacity">
           <Image
             src="/images/reachiwell-logo.png"
@@ -24,13 +25,53 @@ export default function Header({ isMenuOpen, setIsMenuOpen, scrollToSection }: H
           />
           <span className="text-[#0B2220] text-base font-medium leading-[1.275]">ReachiWell</span>
         </Link>
-        <button 
+
+        {/* Desktop Navigation - Center */}
+        <nav className="hidden md:flex items-center gap-8 absolute left-1/2 -translate-x-1/2">
+          <button
+            onClick={() => scrollToSection("how-it-works")}
+            className="text-[#0B2220] text-base font-normal leading-[1.275] hover:text-[#E87954] transition-colors cursor-pointer"
+          >
+            How it Works
+          </button>
+          <button
+            onClick={() => scrollToSection("about-us")}
+            className="text-[#0B2220] text-base font-normal leading-[1.275] hover:text-[#E87954] transition-colors cursor-pointer"
+          >
+            About Us
+          </button>
+          <button
+            onClick={() => scrollToSection("our-services")}
+            className="text-[#0B2220] text-base font-normal leading-[1.275] hover:text-[#E87954] transition-colors cursor-pointer"
+          >
+            Our Services
+          </button>
+        </nav>
+
+        {/* Desktop Action Buttons - Right */}
+        <div className="hidden md:flex items-center gap-6">
+          <Link
+            href="/login"
+            className="text-[#0B2220] text-base font-normal leading-[1.275] hover:text-[#E87954] transition-colors"
+          >
+            Log In
+          </Link>
+          <Link
+            href="/create-account"
+            className="bg-[#E87954] text-white px-8 py-3 rounded-[30px] text-base font-semibold leading-[1.275] h-[44px] flex items-center justify-center hover:bg-[#d66a45] transition-colors cursor-pointer"
+          >
+            Sign Up
+          </Link>
+        </div>
+
+        {/* Mobile Hamburger Menu Button */}
+        <button
           onClick={() => setIsMenuOpen(!isMenuOpen)}
-          className="w-6 h-6 text-[#000000] z-50"
+          className="md:hidden w-6 h-6 text-[#000000] z-50"
           aria-label="Toggle menu"
         >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M3 12H21M3 6H21M3 18H21" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+            <path d="M3 12H21M3 6H21M3 18H21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
           </svg>
         </button>
       </header>
@@ -50,13 +91,13 @@ export default function Header({ isMenuOpen, setIsMenuOpen, scrollToSection }: H
               />
               <span className="text-[#0B2220] text-base font-medium leading-[1.275]">ReachiWell</span>
             </Link>
-            <button 
+            <button
               onClick={() => setIsMenuOpen(false)}
               className="w-6 h-6 text-[#000000] cursor-pointer"
               aria-label="Close menu"
             >
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </button>
           </div>

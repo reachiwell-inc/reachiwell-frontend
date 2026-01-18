@@ -35,8 +35,8 @@ export default function Home() {
             <p className="text-[#414747] text-base md:text-lg lg:text-xl font-normal leading-normal mb-8">
               Get triaged, find care, and arrange transport in minutes.
             </p>
-            <button className="bg-[#E87954] text-white px-6 py-4 rounded-[30px] text-base md:text-lg font-semibold leading-[1.275] w-[344px] md:w-auto md:px-8 md:py-4 h-[60px] flex items-center justify-center hover:bg-[#d66a45] transition-colors shadow-lg">
-              Try the Chatbot
+            <button className="bg-[#E87954] text-white px-6 py-4 rounded-[30px] text-base font-semibold leading-[1.275] w-[344px] h-[60px] flex items-center justify-center mb-6 md:mb-16">
+              Start Chat
             </button>
           </div>
 
