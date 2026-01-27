@@ -37,14 +37,53 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
+      const emailTrimmed = email.trim();
       const response = await login({
-        email: email.trim(),
+        email: emailTrimmed,
         password: password,
       });
 
       if (response.success && response.data?.token) {
         // Store token in localStorage
         localStorage.setItem("token", response.data.token);
+        localStorage.setItem("userEmail", emailTrimmed);
+
+        // Best-effort: extract name fields from JWT payload if present
+        try {
+          const token = response.data.token;
+          const parts = token.split(".");
+          const base64Url = parts.length >= 2 ? parts[1] : "";
+          if (base64Url) {
+            const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+            const padded = base64 + "===".slice((base64.length + 3) % 4);
+
+            const binary = atob(padded);
+            const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0));
+            const jsonPayload = new TextDecoder().decode(bytes);
+
+            const payload = JSON.parse(jsonPayload) as Record<string, unknown>;
+
+            const firstName =
+              (payload.firstName as string | undefined) ||
+              (payload.given_name as string | undefined) ||
+              (payload.givenName as string | undefined);
+            const lastName =
+              (payload.lastName as string | undefined) ||
+              (payload.family_name as string | undefined) ||
+              (payload.familyName as string | undefined);
+
+            if (firstName && typeof firstName === "string") {
+              localStorage.setItem("userFirstName", firstName);
+            }
+            if (lastName && typeof lastName === "string") {
+              localStorage.setItem("userLastName", lastName);
+            }
+          }
+        } catch {
+          // Ignore token parsing errors; initials will fall back to email
+        }
+
+        window.dispatchEvent(new Event("reachiwell:auth"));
         setSuccess(true);
         // Redirect to chat page after 1 second
         setTimeout(() => {
