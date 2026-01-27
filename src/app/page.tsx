@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useState } from "react";
 import Header from "@/components/Header";
+import StartChatButton from "@/components/StartChatButton";
 
 export default function Home() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -23,6 +24,7 @@ export default function Home() {
           isMenuOpen={isMenuOpen}
           setIsMenuOpen={setIsMenuOpen}
           scrollToSection={scrollToSection}
+          loggedInAction="startChat"
         />
 
         {/* Hero Content */}
@@ -35,9 +37,9 @@ export default function Home() {
             <p className="text-[#414747] text-base md:text-lg lg:text-xl font-normal leading-normal mb-8">
               Get triaged, find care, and arrange transport in minutes.
             </p>
-            <button className="bg-[#E87954] text-white px-6 py-4 rounded-[30px] text-base font-semibold leading-[1.275] w-[344px] h-[60px] flex items-center justify-center mb-6 md:mb-16">
+            <StartChatButton className="bg-[#E87954] text-white px-6 py-4 rounded-[30px] text-base font-semibold leading-[1.275] w-[344px] h-[60px] flex items-center justify-center mb-6 md:mb-16">
               Start Chat
-            </button>
+            </StartChatButton>
           </div>
 
           {/* Phone Mockup - Centered Below */}
@@ -118,9 +120,9 @@ export default function Home() {
             Our AI chatbot helps you check symptoms, find nearby care, and book rides, all in one chat.
           </p>
 
-          <button className="bg-[#E87954] text-white px-6 py-4 rounded-[30px] text-base font-semibold leading-[1.275] w-[344px] h-[60px] flex items-center justify-center mb-6 md:mb-16">
+          <StartChatButton className="bg-[#E87954] text-white px-6 py-4 rounded-[30px] text-base font-semibold leading-[1.275] w-[344px] h-[60px] flex items-center justify-center mb-6 md:mb-16">
             Start Chat
-          </button>
+          </StartChatButton>
 
           {/* Features */}
           {/* <div className="w-full max-w-[345px] space-y-6"> */}
@@ -313,9 +315,9 @@ export default function Home() {
               Help us shape smarter, faster healthcare navigation for everyone.
             </p>
             <div className="flex flex-col md:flex-row gap-4 md:gap-6 justify-center items-center max-w-md md:max-w-none mx-auto">
-              <button className="bg-[#E87954] text-white px-6 py-4 rounded-[30px] text-base font-semibold leading-[1.275] w-full lg:w-[240px] md:w-auto md:px-8 h-[60px] flex items-center justify-center hover:bg-[#d66a45] transition-colors">
+              <StartChatButton className="bg-[#E87954] text-white px-6 py-4 rounded-[30px] text-base font-semibold leading-[1.275] w-full lg:w-[240px] md:w-auto md:px-8 h-[60px] flex items-center justify-center hover:bg-[#d66a45] transition-colors">
                 Start Chat
-              </button>
+              </StartChatButton>
               <button className="bg-white border-[1.5px] border-[#E87954] text-[#E87954] px-6 py-4 rounded-[30px] text-base font-semibold leading-[1.275] w-full lg:w-[240px] md:w-auto md:px-8 h-[60px] flex items-center justify-center hover:bg-[#F3FAF9] transition-colors">
                 Request a Demo
               </button>

@@ -91,6 +91,7 @@ export default function CreateAccountPage() {
         // Store user data in localStorage for later use
         localStorage.setItem("userFirstName", firstName.trim());
         localStorage.setItem("userLastName", lastName.trim());
+        localStorage.setItem("userEmail", email.trim());
         setSuccess(true);
         // Redirect to signup-verify-code page after 2 seconds
         setTimeout(() => {
