@@ -1,8 +1,9 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { emitTriage } from "@/lib/triageSocket";
 
 type ChatMessage = {
   type: "user" | "system";
@@ -15,6 +16,7 @@ export default function CheckSymptomsPage() {
   const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([]);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [hasSentSymptoms, setHasSentSymptoms] = useState(false);
+  const [isWaitingForResponse, setIsWaitingForResponse] = useState(false);
 
   const symptoms = [
     "Tooth pain",
@@ -72,38 +74,34 @@ export default function CheckSymptomsPage() {
     return postalCodePattern.test(text.trim());
   };
 
-  // Get system response based on user input
-  const getSystemResponse = (userMessage: string): string[] => {
-    if (!hasSentSymptoms) {
-      // First message is symptoms
-      return [
-        "This looks like something a pharmacist can help with.",
-        "Please type in your city or postal code so I can find services near you."
-      ];
-    } else if (isPostalCode(userMessage)) {
-      // User sent postal code
-      // Extract city from postal code (simplified - in real app, would use geocoding API)
-      const cityMap: { [key: string]: string } = {
-        "V5K": "Surrey, BC",
-        "V6B": "Vancouver, BC",
-        "M5H": "Toronto, ON",
-        "H3A": "Montreal, QC",
-      };
-      
-      const prefix = userMessage.trim().substring(0, 3).toUpperCase();
-      const city = cityMap[prefix] || "your area";
-      
-      return [`Got it! I'm looking for resources around ${city}. One moment...`];
-    } else {
-      // Generic response for other messages
-      return ["I understand. Let me help you with that."];
-    }
-  };
+  // Listen for server responses via the triage socket helper
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      const text =
+        typeof detail === "string"
+          ? detail
+          : (detail?.message as string | undefined) ||
+            (detail?.data as string | undefined) ||
+            JSON.stringify(detail);
+
+      if (text) {
+        setChatMessages((prev) => [...prev, { type: "system", content: text }]);
+        setIsWaitingForResponse(false);
+      }
+    };
+
+    window.addEventListener("reachiwell:triage", handler as EventListener);
+    return () => window.removeEventListener("reachiwell:triage", handler as EventListener);
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const inputValue = getInputValue();
     if (inputValue.trim()) {
+      setIsWaitingForResponse(true);
+      emitTriage(inputValue.trim());
+
       // Add user message to chat
       setChatMessages(prev => [...prev, { type: "user", content: inputValue.trim() }]);
       
@@ -111,16 +109,6 @@ export default function CheckSymptomsPage() {
       if (!hasSentSymptoms) {
         setHasSentSymptoms(true);
       }
-      
-      // Add system response after a short delay (simulate API call)
-      setTimeout(() => {
-        const systemResponses = getSystemResponse(inputValue.trim());
-        systemResponses.forEach((response, index) => {
-          setTimeout(() => {
-            setChatMessages(prev => [...prev, { type: "system", content: response }]);
-          }, index * 500); // Stagger multiple responses
-        });
-      }, 800);
       
       // Reset after submission
       setMessage("");
@@ -195,6 +183,14 @@ export default function CheckSymptomsPage() {
                   )}
                 </div>
               ))}
+
+              {isWaitingForResponse && (
+                <div className="flex justify-start">
+                  <div className="max-w-[80%]">
+                    <p className="text-[#0B2220] text-base font-normal leading-normal">...</p>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 

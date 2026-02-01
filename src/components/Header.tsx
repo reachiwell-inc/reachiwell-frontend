@@ -19,12 +19,15 @@ export default function Header({
   scrollToSection,
   loggedInAction = "userMenu",
 }: HeaderProps) {
-  const [isLoggedIn, setIsLoggedIn] = useState(() => {
-    if (typeof window === "undefined") return false;
-    return !!window.localStorage.getItem("token");
-  });
+  // IMPORTANT:
+  // Don't read localStorage during initial render (SSR vs client mismatch).
+  // Instead, render a stable "logged-out" UI until hydration, then sync auth.
+  const [hasHydrated, setHasHydrated] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
+    setHasHydrated(true);
+
     const syncAuth = () => {
       const token = localStorage.getItem("token");
       setIsLoggedIn(!!token);
@@ -53,6 +56,8 @@ export default function Header({
       window.removeEventListener("reachiwell:auth", onAuth as EventListener);
     };
   }, []);
+
+  const showLoggedIn = hasHydrated && isLoggedIn;
 
   return (
     <>
@@ -94,7 +99,7 @@ export default function Header({
 
         {/* Desktop Action Buttons - Right */}
         <div className="hidden md:flex items-center gap-6">
-          {isLoggedIn && loggedInAction === "startChat" ? (
+          {showLoggedIn && loggedInAction === "startChat" ? (
             <StartChatButton className="bg-[#E87954] text-white px-8 py-3 rounded-[30px] text-base font-semibold leading-[1.275] h-[44px] flex items-center justify-center hover:bg-[#d66a45] transition-colors cursor-pointer">
               Start Chat
             </StartChatButton>
@@ -181,7 +186,7 @@ export default function Header({
 
             {/* Auth actions */}
             <div className="mt-auto pb-8 flex flex-col gap-4">
-              {!isLoggedIn ? (
+              {!showLoggedIn ? (
                 <>
                   <a
                     href="/login"
