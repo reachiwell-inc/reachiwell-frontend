@@ -2,10 +2,11 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import UserMenu from "@/components/UserMenu";
-import { emitTriage } from "@/lib/triageSocket";
+import { useTriageSocket } from "@/lib/useTriageSocket";
+import TypingDots from "@/components/TypingDots";
 
 type ChatMessage = {
   type: "user" | "system";
@@ -17,6 +18,19 @@ export default function ChatPage() {
   const [message, setMessage] = useState("");
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [isWaitingForResponse, setIsWaitingForResponse] = useState(false);
+
+  const { emitTriage } = useTriageSocket({
+    enabled: !isCheckingAuth,
+    onMessage: (text) => {
+      setChatMessages((prev) => [...prev, { type: "system", content: text }]);
+      setIsWaitingForResponse(false);
+    },
+    onError: (text) => {
+      setChatMessages((prev) => [...prev, { type: "system", content: text }]);
+      setIsWaitingForResponse(false);
+    },
+  });
 
   // Check for authentication token and redirect if not logged in
   useEffect(() => {
@@ -28,30 +42,14 @@ export default function ChatPage() {
     setIsCheckingAuth(false);
   }, [router]);
 
-  // Listen for server responses via the triage socket helper
-  useEffect(() => {
-    const handler = (e: Event) => {
-      const detail = (e as CustomEvent).detail;
-      const text =
-        typeof detail === "string"
-          ? detail
-          : (detail?.message as string | undefined) ||
-            (detail?.data as string | undefined) ||
-            JSON.stringify(detail);
-
-      if (text) setChatMessages((prev) => [...prev, { type: "system", content: text }]);
-    };
-
-    window.addEventListener("reachiwell:triage", handler as EventListener);
-    return () => window.removeEventListener("reachiwell:triage", handler as EventListener);
-  }, []);
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const text = message.trim();
     if (text) {
+      setIsWaitingForResponse(true);
       setChatMessages((prev) => [...prev, { type: "user", content: text }]);
-      emitTriage(text);
+      const ok = emitTriage(text);
+      if (!ok) setIsWaitingForResponse(false);
     }
     setMessage("");
   };
@@ -161,6 +159,14 @@ export default function ChatPage() {
                   )}
                 </div>
               ))}
+
+              {isWaitingForResponse && (
+                <div className="flex justify-start">
+                  <div className="max-w-[80%]">
+                    <TypingDots />
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
