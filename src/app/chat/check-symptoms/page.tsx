@@ -3,6 +3,10 @@
 import Image from "next/image";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+import UserMenu from "@/components/UserMenu";
+import { useTriageSocket } from "@/lib/useTriageSocket";
+import TypingDots from "@/components/TypingDots";
 
 type ChatMessage = {
   type: "user" | "system";
@@ -15,6 +19,18 @@ export default function CheckSymptomsPage() {
   const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([]);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [hasSentSymptoms, setHasSentSymptoms] = useState(false);
+  const [isWaitingForResponse, setIsWaitingForResponse] = useState(false);
+
+  const { emitTriage } = useTriageSocket({
+    onMessage: (text) => {
+      setChatMessages((prev) => [...prev, { type: "system", content: text }]);
+      setIsWaitingForResponse(false);
+    },
+    onError: (text) => {
+      setChatMessages((prev) => [...prev, { type: "system", content: text }]);
+      setIsWaitingForResponse(false);
+    },
+  });
 
   const symptoms = [
     "Tooth pain",
@@ -72,38 +88,14 @@ export default function CheckSymptomsPage() {
     return postalCodePattern.test(text.trim());
   };
 
-  // Get system response based on user input
-  const getSystemResponse = (userMessage: string): string[] => {
-    if (!hasSentSymptoms) {
-      // First message is symptoms
-      return [
-        "This looks like something a pharmacist can help with.",
-        "Please type in your city or postal code so I can find services near you."
-      ];
-    } else if (isPostalCode(userMessage)) {
-      // User sent postal code
-      // Extract city from postal code (simplified - in real app, would use geocoding API)
-      const cityMap: { [key: string]: string } = {
-        "V5K": "Surrey, BC",
-        "V6B": "Vancouver, BC",
-        "M5H": "Toronto, ON",
-        "H3A": "Montreal, QC",
-      };
-      
-      const prefix = userMessage.trim().substring(0, 3).toUpperCase();
-      const city = cityMap[prefix] || "your area";
-      
-      return [`Got it! I'm looking for resources around ${city}. One moment...`];
-    } else {
-      // Generic response for other messages
-      return ["I understand. Let me help you with that."];
-    }
-  };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const inputValue = getInputValue();
     if (inputValue.trim()) {
+      setIsWaitingForResponse(true);
+      const ok = emitTriage(inputValue.trim());
+      if (!ok) setIsWaitingForResponse(false);
+
       // Add user message to chat
       setChatMessages(prev => [...prev, { type: "user", content: inputValue.trim() }]);
       
@@ -111,16 +103,6 @@ export default function CheckSymptomsPage() {
       if (!hasSentSymptoms) {
         setHasSentSymptoms(true);
       }
-      
-      // Add system response after a short delay (simulate API call)
-      setTimeout(() => {
-        const systemResponses = getSystemResponse(inputValue.trim());
-        systemResponses.forEach((response, index) => {
-          setTimeout(() => {
-            setChatMessages(prev => [...prev, { type: "system", content: response }]);
-          }, index * 500); // Stagger multiple responses
-        });
-      }, 800);
       
       // Reset after submission
       setMessage("");
@@ -132,7 +114,7 @@ export default function CheckSymptomsPage() {
     <div className="flex flex-col w-full min-h-screen bg-white">
       {/* Header with Logo and User Icon */}
       <header className="flex items-center justify-between px-6 py-4 w-full border-b border-[#E0EEEC]">
-        <div className="flex items-center gap-1">
+      <Link href="/" className="flex items-center gap-1 hover:opacity-80 transition-opacity">
           <Image
             src="/images/reachiwell-logo.png"
             alt="ReachiWell Logo"
@@ -141,10 +123,8 @@ export default function CheckSymptomsPage() {
             className="object-contain"
           />
           <span className="text-[#0B2220] text-base font-medium leading-[1.275]">ReachiWell</span>
-        </div>
-        <button className="w-10 h-10 rounded-full bg-[#F3FAF9] border border-[#E0EEEC] flex items-center justify-center text-[#0B2220] text-sm font-medium">
-          LO
-        </button>
+        </Link>
+        <UserMenu />
       </header>
 
       {/* Navigation Bar */}
@@ -188,13 +168,21 @@ export default function CheckSymptomsPage() {
                     </div>
                   ) : (
                     <div className="max-w-[80%]">
-                      <p className="text-[#0B2220] text-base font-normal leading-normal">
+                      <p className="text-[#4F4F4F] text-base font-normal leading-normal">
                         {msg.content}
                       </p>
                     </div>
                   )}
                 </div>
               ))}
+
+              {isWaitingForResponse && (
+                <div className="flex justify-start">
+                  <div className="max-w-[80%]">
+                    <TypingDots />
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
