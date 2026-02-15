@@ -98,6 +98,10 @@ export function useTriageSocket(options: UseTriageSocketOptions = {}) {
     socket.on("Triage", handleMessage);
     socket.on("findHealthCareCenter", handleMessage);
     socket.on("FindHealthCareCenter", handleMessage);
+    socket.on("bookTransportation", handleMessage);
+    socket.on("BookTransportation", handleMessage);
+    socket.on("escalate", handleMessage);
+    socket.on("Escalate", handleMessage);
     socket.on("connect_error", handleConnectError);
 
     return () => {
@@ -105,6 +109,10 @@ export function useTriageSocket(options: UseTriageSocketOptions = {}) {
       socket.off("Triage", handleMessage);
       socket.off("findHealthCareCenter", handleMessage);
       socket.off("FindHealthCareCenter", handleMessage);
+      socket.off("bookTransportation", handleMessage);
+      socket.off("BookTransportation", handleMessage);
+      socket.off("escalate", handleMessage);
+      socket.off("Escalate", handleMessage);
       socket.off("connect_error", handleConnectError);
       socket.disconnect();
       socketRef.current = null;
@@ -135,6 +143,32 @@ export function useTriageSocket(options: UseTriageSocketOptions = {}) {
     return true;
   }, []);
 
-  return { emitTriage, emitFindHealthCareCenter };
+  const emitBookTransportation = useCallback((healthCareFacilityId: string) => {
+    const trimmed = healthCareFacilityId.trim();
+    if (!trimmed) return false;
+
+    const socket = socketRef.current;
+    if (!socket) return false;
+
+    // Postman: event is bookTransportation with body { healthCareFacilityId }
+    socket.emit("bookTransportation", { healthCareFacilityId: trimmed });
+    return true;
+  }, []);
+
+  const emitEscalate = useCallback((payload?: unknown) => {
+    const socket = socketRef.current;
+    if (!socket) return false;
+
+    // Backend contract may vary; allow optional payload.
+    if (typeof payload === "undefined") {
+      socket.emit("escalate");
+      return true;
+    }
+
+    socket.emit("escalate", payload as any);
+    return true;
+  }, []);
+
+  return { emitTriage, emitFindHealthCareCenter, emitBookTransportation, emitEscalate };
 }
 

@@ -23,17 +23,14 @@ function normalizePhone(phone?: string) {
   return `${hasPlus ? "+" : ""}${digits}`;
 }
 
-function getDirectionsUrl(facility: HealthCareFacility) {
-  const query = [facility.address, facility.city].filter(Boolean).join(", ").trim();
-  return query ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}` : "";
-}
-
 export default function HealthCareFacilitiesMessage({
   message,
   facilities,
+  onArrangeRide,
 }: {
   message: string;
   facilities: HealthCareFacility[];
+  onArrangeRide?: (healthCareFacilityId: string) => void;
 }) {
   return (
     <div className="max-w-[345px]">
@@ -45,8 +42,8 @@ export default function HealthCareFacilitiesMessage({
         {facilities.map((f, idx) => {
           const title = f.name || "Healthcare facility";
           const addressLine = [f.address, f.city].filter(Boolean).join(", ");
-          const directionsUrl = getDirectionsUrl(f);
           const tel = normalizePhone(f.phone);
+          const facilityId = (f._id || f.id || "").trim();
 
           return (
             <div
@@ -79,24 +76,18 @@ export default function HealthCareFacilitiesMessage({
               </div>
 
               <div className="flex gap-3 mt-3">
-                {directionsUrl ? (
-                  <a
-                    href={directionsUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex-1 inline-flex items-center justify-center h-10 rounded-full bg-[#E0EEEC] text-[#2D8E86] text-sm font-medium hover:bg-[#D0DEDC] transition-colors"
-                  >
-                    Get Directions
-                  </a>
-                ) : (
-                  <button
-                    type="button"
-                    disabled
-                    className="flex-1 inline-flex items-center justify-center h-10 rounded-full bg-[#F3FAF9] text-[#9CA3AF] text-sm font-medium cursor-not-allowed"
-                  >
-                    Get Directions
-                  </button>
-                )}
+                <button
+                  type="button"
+                  onClick={() => facilityId && onArrangeRide?.(facilityId)}
+                  disabled={!facilityId || !onArrangeRide}
+                  className={
+                    facilityId && onArrangeRide
+                      ? "flex-1 inline-flex items-center justify-center h-10 rounded-full bg-[#E0EEEC] text-[#2D8E86] text-sm font-medium hover:bg-[#D0DEDC] transition-colors"
+                      : "flex-1 inline-flex items-center justify-center h-10 rounded-full bg-[#F3FAF9] text-[#9CA3AF] text-sm font-medium cursor-not-allowed"
+                  }
+                >
+                  Arrange a ride
+                </button>
 
                 {tel ? (
                   <a

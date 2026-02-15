@@ -9,6 +9,7 @@ import { useTriageSocket } from "@/lib/useTriageSocket";
 import TypingDots from "@/components/TypingDots";
 import { isLocationInput } from "@/lib/locationInput";
 import HealthCareFacilitiesMessage, { type HealthCareFacility } from "@/components/HealthCareFacilitiesMessage";
+import HelpGettingThereSection from "@/components/HelpGettingThereSection";
 
 type ChatMessage = {
   type: "user" | "system";
@@ -34,7 +35,7 @@ export default function CheckSymptomsPage() {
   const [hasSentSymptoms, setHasSentSymptoms] = useState(false);
   const [isWaitingForResponse, setIsWaitingForResponse] = useState(false);
 
-  const { emitTriage, emitFindHealthCareCenter } = useTriageSocket({
+  const { emitTriage, emitFindHealthCareCenter, emitBookTransportation, emitEscalate } = useTriageSocket({
     onMessage: (text, raw) => {
       if (isFindHealthCareCenterPayload(raw)) {
         const msg = raw.message || "Here are the best options for you right now:";
@@ -186,7 +187,34 @@ export default function CheckSymptomsPage() {
                   ) : (
                     <div className="max-w-[80%]">
                       {msg.kind === "facilities" && msg.facilities ? (
-                        <HealthCareFacilitiesMessage message={msg.content || ""} facilities={msg.facilities} />
+                        <>
+                          <HealthCareFacilitiesMessage
+                            message={msg.content || ""}
+                            facilities={msg.facilities}
+                            onArrangeRide={(healthCareFacilityId) => {
+                              emitBookTransportation(healthCareFacilityId);
+                            }}
+                          />
+                          <HelpGettingThereSection
+                            onSelect={(action) => {
+                              const label =
+                                action === "ride"
+                                  ? "Yes, arrange a ride"
+                                  : action === "directions"
+                                    ? "Help me with directions"
+                                    : action === "volunteer"
+                                      ? "Speak with a ReachiWell volunteer"
+                                      : "No, I’ll get there myself";
+                              setChatMessages((prev) => [...prev, { type: "user", content: label }]);
+
+                              if (action === "volunteer") {
+                                setIsWaitingForResponse(true);
+                                const ok = emitEscalate({ action: "volunteer" });
+                                if (!ok) setIsWaitingForResponse(false);
+                              }
+                            }}
+                          />
+                        </>
                       ) : (
                         <p className="text-[#4F4F4F] text-base font-normal leading-normal">
                           {msg.content}
