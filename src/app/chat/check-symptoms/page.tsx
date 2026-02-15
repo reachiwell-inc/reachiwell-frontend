@@ -7,11 +7,25 @@ import Link from "next/link";
 import UserMenu from "@/components/UserMenu";
 import { useTriageSocket } from "@/lib/useTriageSocket";
 import TypingDots from "@/components/TypingDots";
+import { isLocationInput } from "@/lib/locationInput";
+import HealthCareFacilitiesMessage, { type HealthCareFacility } from "@/components/HealthCareFacilitiesMessage";
+import HelpGettingThereSection from "@/components/HelpGettingThereSection";
 
 type ChatMessage = {
   type: "user" | "system";
-  content: string;
+  content?: string;
+  kind?: "text" | "facilities";
+  facilities?: HealthCareFacility[];
 };
+
+type FindHealthCareCenterPayload = {
+  message?: string;
+  healthcareFacilities?: HealthCareFacility[];
+};
+
+function isFindHealthCareCenterPayload(raw: unknown): raw is FindHealthCareCenterPayload {
+  return !!raw && typeof raw === "object" && Array.isArray((raw as any).healthcareFacilities);
+}
 
 export default function CheckSymptomsPage() {
   const router = useRouter();
@@ -21,13 +35,22 @@ export default function CheckSymptomsPage() {
   const [hasSentSymptoms, setHasSentSymptoms] = useState(false);
   const [isWaitingForResponse, setIsWaitingForResponse] = useState(false);
 
-  const { emitTriage } = useTriageSocket({
-    onMessage: (text) => {
-      setChatMessages((prev) => [...prev, { type: "system", content: text }]);
+  const { emitTriage, emitFindHealthCareCenter, emitBookTransportation, emitEscalate } = useTriageSocket({
+    onMessage: (text, raw) => {
+      if (isFindHealthCareCenterPayload(raw)) {
+        const msg = raw.message || "Here are the best options for you right now:";
+        const facilities = raw.healthcareFacilities || [];
+         console.log("facilities", facilities);
+        setChatMessages((prev) => [...prev, { type: "system", kind: "facilities", facilities, content: msg }]);
+        setIsWaitingForResponse(false);
+        return;
+      }
+
+      setChatMessages((prev) => [...prev, { type: "system", kind: "text", content: text }]);
       setIsWaitingForResponse(false);
     },
     onError: (text) => {
-      setChatMessages((prev) => [...prev, { type: "system", content: text }]);
+      setChatMessages((prev) => [...prev, { type: "system", kind: "text", content: text }]);
       setIsWaitingForResponse(false);
     },
   });
@@ -82,22 +105,17 @@ export default function CheckSymptomsPage() {
     }
   };
 
-  // Check if message looks like a postal code (Canadian format: A1A 1A1 or similar)
-  const isPostalCode = (text: string): boolean => {
-    const postalCodePattern = /^[A-Za-z]\d[A-Za-z]\s?\d[A-Za-z]\d$/;
-    return postalCodePattern.test(text.trim());
-  };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const inputValue = getInputValue();
-    if (inputValue.trim()) {
+    const trimmed = inputValue.trim();
+    if (trimmed) {
       setIsWaitingForResponse(true);
-      const ok = emitTriage(inputValue.trim());
+      const ok = isLocationInput(trimmed) ? emitFindHealthCareCenter(trimmed) : emitTriage(trimmed);
       if (!ok) setIsWaitingForResponse(false);
 
       // Add user message to chat
-      setChatMessages(prev => [...prev, { type: "user", content: inputValue.trim() }]);
+      setChatMessages(prev => [...prev, { type: "user", content: trimmed }]);
       
       // Track if symptoms have been sent
       if (!hasSentSymptoms) {
@@ -168,9 +186,40 @@ export default function CheckSymptomsPage() {
                     </div>
                   ) : (
                     <div className="max-w-[80%]">
-                      <p className="text-[#4F4F4F] text-base font-normal leading-normal">
-                        {msg.content}
-                      </p>
+                      {msg.kind === "facilities" && msg.facilities ? (
+                        <>
+                          <HealthCareFacilitiesMessage
+                            message={msg.content || ""}
+                            facilities={msg.facilities}
+                            onArrangeRide={(healthCareFacilityId) => {
+                              emitBookTransportation(healthCareFacilityId);
+                            }}
+                          />
+                          <HelpGettingThereSection
+                            onSelect={(action) => {
+                              const label =
+                                action === "ride"
+                                  ? "Yes, arrange a ride"
+                                  : action === "directions"
+                                    ? "Help me with directions"
+                                    : action === "volunteer"
+                                      ? "Speak with a ReachiWell volunteer"
+                                      : "No, I’ll get there myself";
+                              setChatMessages((prev) => [...prev, { type: "user", content: label }]);
+
+                              if (action === "volunteer") {
+                                setIsWaitingForResponse(true);
+                                const ok = emitEscalate({ action: "volunteer" });
+                                if (!ok) setIsWaitingForResponse(false);
+                              }
+                            }}
+                          />
+                        </>
+                      ) : (
+                        <p className="text-[#4F4F4F] text-base font-normal leading-normal">
+                          {msg.content}
+                        </p>
+                      )}
                     </div>
                   )}
                 </div>
