@@ -20,9 +20,25 @@ function getOrCreateRoomName() {
 }
 
 function payloadToText(payload: unknown) {
-  return typeof payload === "string"
-    ? payload
-    : (payload as any)?.message || (payload as any)?.data || (payload as any)?.text || JSON.stringify(payload);
+  if (typeof payload === "string") return payload;
+
+  const maybeObj = payload as any;
+
+  // findHealthCareCenter commonly returns:
+  // { message: string, healthcareFacilities: Array<{ name?, address?, ... }> }
+  const facilities = Array.isArray(maybeObj?.healthcareFacilities) ? maybeObj.healthcareFacilities : null;
+  if (facilities) {
+    const header = maybeObj?.message || "Here are some healthcare facilities you can visit:";
+    const lines = facilities
+      .map((f: any, idx: number) => {
+        const label = f?.name || f?.address || f?.location || f?._id || `Facility ${idx + 1}`;
+        return `- ${String(label)}`;
+      })
+      .join("\n");
+    return lines ? `${header}\n${lines}` : String(header);
+  }
+
+  return maybeObj?.message || maybeObj?.data || maybeObj?.text || JSON.stringify(payload);
 }
 
 type UseTriageSocketOptions = {
@@ -80,11 +96,15 @@ export function useTriageSocket(options: UseTriageSocketOptions = {}) {
 
     socket.on("triage", handleMessage);
     socket.on("Triage", handleMessage);
+    socket.on("findHealthCareCenter", handleMessage);
+    socket.on("FindHealthCareCenter", handleMessage);
     socket.on("connect_error", handleConnectError);
 
     return () => {
       socket.off("triage", handleMessage);
       socket.off("Triage", handleMessage);
+      socket.off("findHealthCareCenter", handleMessage);
+      socket.off("FindHealthCareCenter", handleMessage);
       socket.off("connect_error", handleConnectError);
       socket.disconnect();
       socketRef.current = null;
@@ -103,6 +123,18 @@ export function useTriageSocket(options: UseTriageSocketOptions = {}) {
     return true;
   }, []);
 
-  return { emitTriage };
+  const emitFindHealthCareCenter = useCallback((address: string) => {
+    const trimmed = address.trim();
+    if (!trimmed) return false;
+
+    const socket = socketRef.current;
+    if (!socket) return false;
+
+    // Per docs: event name is findHealthCareCenter and body is JSON { address: "..." }
+    socket.emit("findHealthCareCenter", { address: trimmed });
+    return true;
+  }, []);
+
+  return { emitTriage, emitFindHealthCareCenter };
 }
 
