@@ -121,11 +121,11 @@ export default function Footer() {
         {/* Legal */}
         <div className="text-center text-[#F3FAF9]">
           <p className="text-base font-medium leading-[1.275] mb-4 md:mb-3 md:text-[14px]">
-            © 2025 ReachiWell. All rights reserved.
+            © {new Date().getFullYear()} ReachiWell. All rights reserved.
           </p>
 
           <p className="mx-auto text-base font-medium leading-normal md:text-[14px] mb-3 md:mb-2 max-w-[820px]">
-            Novacrust is a financial technology company, not a bank.
+            ReachiWell is a financial technology company, not a bank.
           </p>
 
           <p className="mx-auto text-base font-medium leading-normal md:text-[14px] max-w-[820px]">
