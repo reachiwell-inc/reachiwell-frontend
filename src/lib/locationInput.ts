@@ -17,6 +17,7 @@ export function isLikelyAddress(text: string): boolean {
   const hasLetter = /[A-Za-z]/.test(t);
   const words = t.split(/\s+/).filter(Boolean);
   const hasEnoughWords = words.length >= 3;
+  const startsWithNumber = /^\d+/.test(t);
 
   const hasAddressHint =
     t.includes(",") ||
@@ -24,7 +25,11 @@ export function isLikelyAddress(text: string): boolean {
       t
     );
 
-  return hasDigit && hasLetter && (hasAddressHint || hasEnoughWords);
+  // Avoid misclassifying symptom sentences like "I've had a headache for 15 minutes"
+  // as an address just because they contain a number.
+  // If there's no strong address hint, only treat it as an address when it *starts*
+  // with a house/building number (e.g. "10 Downing Street ...").
+  return hasDigit && hasLetter && (hasAddressHint || (startsWithNumber && hasEnoughWords));
 }
 
 export function isLocationInput(text: string): boolean {

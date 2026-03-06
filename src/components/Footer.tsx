@@ -124,13 +124,8 @@ export default function Footer() {
             © {new Date().getFullYear()} ReachiWell. All rights reserved.
           </p>
 
-          <p className="mx-auto text-base font-medium leading-normal md:text-[14px] mb-3 md:mb-2 max-w-[820px]">
-            ReachiWell is a financial technology company, not a bank.
-          </p>
-
           <p className="mx-auto text-base font-medium leading-normal md:text-[14px] max-w-[820px]">
-            All banking services are provided by our licensed banking partners. ReachiWell is not a
-            healthcare provider and does not provide medical diagnoses, treatment, or professional
+            ReachiWell is not a healthcare provider and does not provide medical diagnoses, treatment, or professional
             medical advice. Our platform is intended to help users in British Columbia and across
             Canada find and access healthcare services, including clinics, pharmacies, and
             transportation support. The information provided through ReachiWell is for general

@@ -12,19 +12,26 @@ import HealthCareFacilitiesMessage, { type HealthCareFacility } from "@/componen
 import HelpGettingThereSection from "@/components/HelpGettingThereSection";
 
 type ChatMessage = {
+  id: string;
   type: "user" | "system";
   content?: string;
-  kind?: "text" | "facilities";
+  kind?: "text" | "facilities" | "yesno";
   facilities?: HealthCareFacility[];
+  yesNoState?: "pending" | "answered";
 };
 
 type FindHealthCareCenterPayload = {
-  message?: string;
+  data?: string;
+  // message?: string;
   healthcareFacilities?: HealthCareFacility[];
 };
 
 function isFindHealthCareCenterPayload(raw: unknown): raw is FindHealthCareCenterPayload {
   return !!raw && typeof raw === "object" && Array.isArray((raw as any).healthcareFacilities);
+}
+
+function makeMessageId() {
+  return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
 
 export default function ChatPage() {
@@ -37,19 +44,32 @@ export default function ChatPage() {
   const { emitTriage, emitFindHealthCareCenter, emitBookTransportation, emitEscalate } = useTriageSocket({
     enabled: !isCheckingAuth,
     onMessage: (text, raw) => {
+      console.log("onMessage", text, raw);
       if (isFindHealthCareCenterPayload(raw)) {
-        const msg = raw.message || "Here are the best options for you right now:";
+        const msg = raw.data || "Here are the best options for you right now:";
         const facilities = raw.healthcareFacilities || [];
-        setChatMessages((prev) => [...prev, { type: "system", kind: "facilities", facilities, content: msg }]);
+        setChatMessages((prev) => [
+          ...prev,
+          { id: makeMessageId(), type: "system", kind: "facilities", facilities, content: msg },
+        ]);
         setIsWaitingForResponse(false);
         return;
       }
 
-      setChatMessages((prev) => [...prev, { type: "system", kind: "text", content: text }]);
+      if (raw && typeof raw === "object" && (raw as any).category === "two") {
+        setChatMessages((prev) => [
+          ...prev,
+          { id: makeMessageId(), type: "system", kind: "yesno", content: text, yesNoState: "pending" },
+        ]);
+        setIsWaitingForResponse(false);
+        return;
+      }
+
+      setChatMessages((prev) => [...prev, { id: makeMessageId(), type: "system", kind: "text", content: text }]);
       setIsWaitingForResponse(false);
     },
     onError: (text) => {
-      setChatMessages((prev) => [...prev, { type: "system", kind: "text", content: text }]);
+      setChatMessages((prev) => [...prev, { id: makeMessageId(), type: "system", kind: "text", content: text }]);
       setIsWaitingForResponse(false);
     },
   });
@@ -69,11 +89,31 @@ export default function ChatPage() {
     const text = message.trim();
     if (text) {
       setIsWaitingForResponse(true);
-      setChatMessages((prev) => [...prev, { type: "user", content: text }]);
+      setChatMessages((prev) => [...prev, { id: makeMessageId(), type: "user", content: text }]);
       const ok = isLocationInput(text) ? emitFindHealthCareCenter(text) : emitTriage(text);
       if (!ok) setIsWaitingForResponse(false);
     }
     setMessage("");
+  };
+
+  const handleYesNo = (messageId: string, choice: "yes" | "no") => {
+    setChatMessages((prev) => {
+      const next = prev.map((m) =>
+        m.id === messageId && m.kind === "yesno" ? { ...m, yesNoState: "answered" as const } : m
+      );
+
+      const userLabel = choice === "yes" ? "Yes" : "No";
+      const followUp =
+        choice === "yes"
+          ? "Please enter your postal code or address so I can direct you to the appropriate healthcare facility around you."
+          : "Thanks for using our service. Do you need anything else I can help with?";
+
+      return [
+        ...next,
+        { id: makeMessageId(), type: "user", content: userLabel },
+        { id: makeMessageId(), type: "system", kind: "text", content: followUp },
+      ];
+    });
   };
 
   // Show loading state while checking authentication
@@ -164,8 +204,8 @@ export default function ChatPage() {
             </>
           ) : (
             <div className="flex flex-col gap-4">
-              {chatMessages.map((msg, idx) => (
-                <div key={idx} className={`flex ${msg.type === "user" ? "justify-end" : "justify-start"}`}>
+              {chatMessages.map((msg) => (
+                <div key={msg.id} className={`flex ${msg.type === "user" ? "justify-end" : "justify-start"}`}>
                   {msg.type === "user" ? (
                     <div className="bg-[#599891] text-white px-4 py-3 rounded-full rounded-br-sm max-w-[80%]">
                       <p className="text-base font-normal leading-normal whitespace-pre-wrap break-words">
@@ -193,7 +233,7 @@ export default function ChatPage() {
                                     : action === "volunteer"
                                       ? "Speak with a ReachiWell volunteer"
                                       : "No, I’ll get there myself";
-                              setChatMessages((prev) => [...prev, { type: "user", content: label }]);
+                              setChatMessages((prev) => [...prev, { id: makeMessageId(), type: "user", content: label }]);
 
                               if (action === "volunteer") {
                                 setIsWaitingForResponse(true);
@@ -203,6 +243,48 @@ export default function ChatPage() {
                             }}
                           />
                         </>
+                      ) : msg.kind === "yesno" ? (
+                        <div className="bg-[#F8F8F8] border border-[#E0EEEC] rounded-2xl px-4 py-3">
+                          <p className="text-[#0B2220] text-base font-normal leading-normal whitespace-pre-wrap break-words">
+                            {msg.content}
+                          </p>
+                          <div className="flex items-center gap-4 mt-3">
+                            <button
+                              type="button"
+                              disabled={msg.yesNoState === "answered"}
+                              onClick={() => handleYesNo(msg.id, "yes")}
+                              className="flex-1 bg-white border border-[#E0EEEC] rounded-full px-4 py-2 text-[#1E3330] text-base font-medium leading-normal flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#EFF6F6]"
+                            >
+                              <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                  d="M16.667 5L7.5 14.167 3.333 10"
+                                  stroke="#16A34A"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                />
+                              </svg>
+                              Yes
+                            </button>
+                            <button
+                              type="button"
+                              disabled={msg.yesNoState === "answered"}
+                              onClick={() => handleYesNo(msg.id, "no")}
+                              className="flex-1 bg-white border border-[#E0EEEC] rounded-full px-4 py-2 text-[#1E3330] text-base font-medium leading-normal flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#FEF2F2]"
+                            >
+                              <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                  d="M5 5L15 15M15 5L5 15"
+                                  stroke="#DC2626"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                />
+                              </svg>
+                              No
+                            </button>
+                          </div>
+                        </div>
                       ) : (
                         <p className="text-[#0B2220] text-base font-normal leading-normal whitespace-pre-wrap break-words">
                           {msg.content}
