@@ -23,12 +23,21 @@ function payloadToText(payload: unknown) {
   if (typeof payload === "string") return payload;
 
   const maybeObj = payload as any;
+  const asText = (v: unknown) => {
+    if (typeof v === "string") return v;
+    if (v == null) return "";
+    try {
+      return JSON.stringify(v);
+    } catch {
+      return String(v);
+    }
+  };
 
   // findHealthCareCenter commonly returns:
   // { message: string, healthcareFacilities: Array<{ name?, address?, ... }> }
   const facilities = Array.isArray(maybeObj?.healthcareFacilities) ? maybeObj.healthcareFacilities : null;
   if (facilities) {
-    const header = maybeObj?.message || "Here are some healthcare facilities you can visit:";
+    const header = asText(maybeObj?.data) || asText(maybeObj?.message) || "Here are some healthcare facilities you can visit:";
     const lines = facilities
       .map((f: any, idx: number) => {
         const label = f?.name || f?.address || f?.location || f?._id || `Facility ${idx + 1}`;
@@ -38,7 +47,7 @@ function payloadToText(payload: unknown) {
     return lines ? `${header}\n${lines}` : String(header);
   }
 
-  return maybeObj?.message || maybeObj?.data || maybeObj?.text || JSON.stringify(payload);
+  return asText(maybeObj?.data) || asText(maybeObj?.message) || asText(maybeObj?.text) || asText(payload);
 }
 
 type UseTriageSocketOptions = {
@@ -85,6 +94,7 @@ export function useTriageSocket(options: UseTriageSocketOptions = {}) {
     socketRef.current = socket;
 
     const handleMessage = (payload: unknown) => {
+      console.log("handleMessage", payload);
       const text = payloadToText(payload);
       onMessageRef.current?.(String(text), payload);
     };
