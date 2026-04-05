@@ -51,6 +51,7 @@ export async function POST(req: Request) {
     const res = NextResponse.json({
       success: true,
       message: upstreamJson?.message || "Login successful",
+      data: { token },
       customStatusCode: upstreamJson?.customStatusCode,
     });
     res.cookies.set(ADMIN_TOKEN_COOKIE, token, {

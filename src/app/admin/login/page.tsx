@@ -45,8 +45,13 @@ function AdminLoginInner() {
         return;
       }
 
+      const json = await res.json().catch(() => ({}));
       try {
         localStorage.setItem("rw_admin_email", email.trim());
+        const token = json?.data?.token;
+        if (typeof token === "string" && token) {
+          localStorage.setItem("rw_admin_token", token);
+        }
       } catch {
         // ignore
       }

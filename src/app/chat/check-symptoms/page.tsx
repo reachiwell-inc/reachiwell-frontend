@@ -47,7 +47,6 @@ export default function CheckSymptomsPage() {
       if (isFindHealthCareCenterPayload(raw)) {
         const msg = raw.data || raw.message || "Here are the best options for you right now:";
         const facilities = raw.healthcareFacilities || [];
-         console.log("facilities", facilities);
         setChatMessages((prev) => [
           ...prev,
           { id: makeMessageId(), type: "system", kind: "facilities", facilities, content: msg },

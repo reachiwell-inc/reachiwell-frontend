@@ -94,7 +94,6 @@ export function useTriageSocket(options: UseTriageSocketOptions = {}) {
     socketRef.current = socket;
 
     const handleMessage = (payload: unknown) => {
-      console.log("handleMessage", payload);
       const text = payloadToText(payload);
       onMessageRef.current?.(String(text), payload);
     };
