@@ -4,14 +4,14 @@
 
   type ChatStatus = "Completed" | "In progress" | "Escalated";
 
-  type ConversationRow = {
-    name: string;
+  export type ConversationRow = {
+    id: string;
+    userName: string;
     date: string;
     time: string;
-    location: string;
-    ctas: string;
+    roomName: string;
     status: ChatStatus;
-    rating: number;
+    rating?: number;
   };
 
   function StatusPill({ status }: { status: ChatStatus }) {
@@ -67,22 +67,11 @@
     );
   }
 
-  export default function DashboardClient() {
+  export default function DashboardClient(props: { rows: ConversationRow[] }) {
     const [filterOpen, setFilterOpen] = useState(false);
     const [filter, setFilter] = useState<"All Chats" | ChatStatus>("All Chats");
     const [query, setQuery] = useState("");
-
-    const rows: ConversationRow[] = [
-      { name: "RW-10481", date: "Mar 12, 2026", time: "10:14 AM", location: "Vancouver, BC", ctas: "CTAS 1", status: "Completed", rating: 5 },
-      { name: "RW-10482", date: "Mar 12, 2026", time: "10:14 AM", location: "Surrey, BC", ctas: "CTAS 2", status: "In progress", rating: 5 },
-      { name: "RW-10483", date: "Mar 12, 2026", time: "10:14 AM", location: "Kelowna, BC", ctas: "CTAS 3", status: "Escalated", rating: 5 },
-      { name: "RW-10484", date: "Mar 12, 2026", time: "10:14 AM", location: "Prince George, BC", ctas: "CTAS 4", status: "Completed", rating: 5 },
-      { name: "RW-10485", date: "Mar 12, 2026", time: "10:14 AM", location: "Vancouver, BC", ctas: "CTAS 5", status: "Completed", rating: 5 },
-      { name: "RW-10486", date: "Mar 12, 2026", time: "10:14 AM", location: "Vancouver, BC", ctas: "CTAS 1", status: "In progress", rating: 5 },
-      { name: "RW-10487", date: "Mar 12, 2026", time: "10:14 AM", location: "Vancouver, BC", ctas: "CTAS 2", status: "Completed", rating: 5 },
-      { name: "RW-10488", date: "Mar 12, 2026", time: "10:14 AM", location: "Vancouver, BC", ctas: "CTAS 3", status: "Completed", rating: 5 },
-      { name: "RW-10489", date: "Mar 12, 2026", time: "10:14 AM", location: "Vancouver, BC", ctas: "CTAS 4", status: "Completed", rating: 5 },
-    ];
+    const rows = props.rows;
 
     const filteredRows = useMemo(() => {
       const q = query.trim().toLowerCase();
@@ -90,7 +79,7 @@
         const matchesFilter = filter === "All Chats" ? true : r.status === filter;
         const matchesQuery = !q
           ? true
-          : [r.name, r.location, r.ctas || "", r.status].some((x) => x.toLowerCase().includes(q));
+          : [r.userName, r.roomName, r.status].some((x) => x.toLowerCase().includes(q));
         return matchesFilter && matchesQuery;
       });
     }, [filter, query]);
@@ -154,34 +143,36 @@
                   <th className="px-8 py-5">Name</th>
                   <th className="px-4 py-5">Date</th>
                   <th className="px-4 py-5">Time</th>
-                  <th className="px-4 py-5">Location</th>
-                  <th className="px-4 py-5">CTAS</th>
+                  <th className="px-4 py-5">Room Name</th>
                   <th className="px-4 py-5">Status</th>
                   <th className="px-8 py-5">Rating</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredRows.map((r) => (
-                  <tr key={r.name} className="border-t border-[#EEF2F7] text-sm text-[#414747]">
-                    <td className="px-8 py-6 text-[#414747]">{r.name}</td>
+                  <tr key={r.id} className="border-t border-[#EEF2F7] text-sm text-[#414747]">
+                    <td className="px-8 py-6 text-[#414747]">{r.userName}</td>
                     <td className="px-4 py-6">{r.date}</td>
                     <td className="px-4 py-6">{r.time}</td>
-                    <td className="px-4 py-6">{r.location}</td>
-                    <td className="px-4 py-6 text-[#6B7280]">{r.ctas || ""}</td>
+                    <td className="px-4 py-6 text-[#6B7280]">{r.roomName.toUpperCase()}</td>
                     <td className="px-4 py-6">
                       <StatusPill status={r.status} />
                     </td>
                     <td className="px-8 py-6">
-                      <div className="inline-flex items-center gap-1.5 text-[#414747]">
-                        <span className="font-medium">{r.rating}</span>
-                        <StarIcon />
-                      </div>
+                      {typeof r.rating === "number" ? (
+                        <div className="inline-flex items-center gap-1.5 text-[#414747]">
+                          <span className="font-medium">{r.rating}</span>
+                          <StarIcon />
+                        </div>
+                      ) : (
+                        <span className="text-[#9CA3AF]">—</span>
+                      )}
                     </td>
                   </tr>
                 ))}
                 {filteredRows.length === 0 && (
                   <tr className="border-t border-[#EEF2F7]">
-                    <td colSpan={7} className="px-8 py-10 text-sm text-[#6B7280]">
+                    <td colSpan={6} className="px-8 py-10 text-sm text-[#6B7280]">
                       No conversations found.
                     </td>
                   </tr>
