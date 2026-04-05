@@ -10,9 +10,9 @@ function AdminLoginInner() {
 
   const nextPath = useMemo(() => {
     const n = (searchParams?.get("next") || "").trim();
-    if (!n) return "/admin";
+    if (!n) return "/admin/dashboard";
     // basic safety: only allow internal paths
-    if (!n.startsWith("/")) return "/admin";
+    if (!n.startsWith("/")) return "/admin/dashboard";
     return n;
   }, [searchParams]);
 
@@ -43,6 +43,12 @@ function AdminLoginInner() {
         const json = await res.json().catch(() => ({}));
         setError(json?.error || json?.message || "Login failed. Please try again.");
         return;
+      }
+
+      try {
+        localStorage.setItem("rw_admin_email", email.trim());
+      } catch {
+        // ignore
       }
 
       router.push(nextPath);
