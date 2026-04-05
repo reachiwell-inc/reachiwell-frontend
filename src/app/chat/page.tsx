@@ -44,7 +44,6 @@ export default function ChatPage() {
   const { emitTriage, emitFindHealthCareCenter, emitBookTransportation, emitEscalate } = useTriageSocket({
     enabled: !isCheckingAuth,
     onMessage: (text, raw) => {
-      console.log("onMessage", text, raw);
       if (isFindHealthCareCenterPayload(raw)) {
         const msg = raw.data || "Here are the best options for you right now:";
         const facilities = raw.healthcareFacilities || [];

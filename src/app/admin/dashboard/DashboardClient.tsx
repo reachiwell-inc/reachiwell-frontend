@@ -1,6 +1,7 @@
   "use client";
 
   import { useMemo, useState } from "react";
+  import { useRouter } from "next/navigation";
 
   type ChatStatus = "Completed" | "In progress" | "Escalated";
 
@@ -68,6 +69,7 @@
   }
 
   export default function DashboardClient(props: { rows: ConversationRow[] }) {
+    const router = useRouter();
     const [filterOpen, setFilterOpen] = useState(false);
     const [filter, setFilter] = useState<"All Chats" | ChatStatus>("All Chats");
     const [query, setQuery] = useState("");
@@ -150,7 +152,16 @@
               </thead>
               <tbody>
                 {filteredRows.map((r) => (
-                  <tr key={r.id} className="border-t border-[#EEF2F7] text-sm text-[#414747]">
+                  <tr
+                    key={r.id}
+                    className="border-t border-[#EEF2F7] text-sm text-[#414747] hover:bg-[#F9FAFB] cursor-pointer"
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => router.push(`/admin/conversations/${r.id}`)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") router.push(`/admin/conversations/${r.id}`);
+                    }}
+                  >
                     <td className="px-8 py-6 text-[#414747]">{r.userName}</td>
                     <td className="px-4 py-6">{r.date}</td>
                     <td className="px-4 py-6">{r.time}</td>
