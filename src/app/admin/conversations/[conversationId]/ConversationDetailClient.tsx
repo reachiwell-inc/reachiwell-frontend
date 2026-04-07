@@ -3,15 +3,28 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { io, type Socket } from "socket.io-client";
 import Link from "next/link";
+import HealthCareFacilitiesMessage, { type HealthCareFacility } from "@/components/HealthCareFacilitiesMessage";
 
 const UPSTREAM_URL = "https://reachiwell-git-17355259644.europe-west1.run.app";
 
 type DisplayMessage = {
   id: string;
   message: string;
-  sentByAdmin: boolean;
+  sentByAdmin?: boolean;
   senderId?: string;
+  sender?: string;
   createdAt?: string;
+};
+
+type HealthCareFacilityLite = {
+  _id?: string;
+  id?: string;
+  name?: string;
+  address?: string;
+  postalCode?: string;
+  city?: string;
+  phone?: string;
+  type?: string;
 };
 
 function makeId() {
@@ -81,6 +94,44 @@ function payloadToText(payload: unknown) {
   );
 }
 
+function safeJsonParse<T>(text: string): T | null {
+  try {
+    return JSON.parse(text) as T;
+  } catch {
+    return null;
+  }
+}
+
+function parseFacilitiesMessage(text: string): { header: string; facilities: HealthCareFacilityLite[] } | null {
+  const t = text.trim();
+  if (!t) return null;
+
+  // Pattern A: JSON string: {"message":"...","healthcareFacilities":[...]}
+  if (t.startsWith("{") && t.endsWith("}")) {
+    const obj = safeJsonParse<any>(t);
+    const facilities = Array.isArray(obj?.healthcareFacilities) ? (obj.healthcareFacilities as HealthCareFacilityLite[]) : null;
+    if (facilities) {
+      const header = String(obj?.message || obj?.data || "Here are the best options for you right now:");
+      return { header, facilities };
+    }
+  }
+
+  // Pattern B: "Header text: [{...},{...}]"
+  const firstBracket = t.indexOf("[");
+  const lastBracket = t.lastIndexOf("]");
+  if (firstBracket !== -1 && lastBracket !== -1 && lastBracket > firstBracket) {
+    const maybeArrayText = t.slice(firstBracket, lastBracket + 1).trim();
+    const arr = safeJsonParse<any>(maybeArrayText);
+    if (Array.isArray(arr)) {
+      const rawHeader = t.slice(0, firstBracket).trim();
+      const header = rawHeader.replace(/:\s*$/, "") || "Here are the best options for you right now:";
+      return { header, facilities: arr as HealthCareFacilityLite[] };
+    }
+  }
+
+  return null;
+}
+
 export default function ConversationDetailClient(props: {
   conversationId: string;
   title: string;
@@ -134,7 +185,14 @@ export default function ConversationDetailClient(props: {
       if (!text) return;
       setMessages((prev) => [
         ...prev,
-        { id: makeId(), message: text, sentByAdmin: false, senderId: "system", createdAt: new Date().toISOString() },
+        {
+          id: makeId(),
+          message: text,
+          sender: "reachiwell",
+          sentByAdmin: false,
+          senderId: "system",
+          createdAt: new Date().toISOString(),
+        },
       ]);
     };
 
@@ -166,7 +224,14 @@ export default function ConversationDetailClient(props: {
     const joinNotice = "An admin has joined the chat.";
     setMessages((prev) => [
       ...prev,
-      { id: makeId(), message: joinNotice, sentByAdmin: true, senderId: "admin", createdAt: new Date().toISOString() },
+      {
+        id: makeId(),
+        message: joinNotice,
+        sender: "admin",
+        sentByAdmin: true,
+        senderId: "admin",
+        createdAt: new Date().toISOString(),
+      },
     ]);
     // best-effort; socket may not be connected yet.
     setTimeout(() => emitManualChat(joinNotice), 350);
@@ -178,7 +243,7 @@ export default function ConversationDetailClient(props: {
 
     setMessages((prev) => [
       ...prev,
-      { id: makeId(), message: text, sentByAdmin: true, senderId: "admin", createdAt: new Date().toISOString() },
+      { id: makeId(), message: text, sender: "admin", sentByAdmin: true, senderId: "admin", createdAt: new Date().toISOString() },
     ]);
 
     setInput("");
@@ -219,13 +284,33 @@ export default function ConversationDetailClient(props: {
 
         <div className="mt-10 space-y-6 flex-1">
           {messages.map((m) => {
-            const isUser = !m.sentByAdmin && m.senderId !== "system";
-            if (isUser) {
+            const role =
+              m.senderId === "system" || m.sender === "reachiwell"
+                ? "system"
+                : m.sentByAdmin === true || m.sender === "admin"
+                  ? "admin"
+                  : "user";
+
+            if (role === "user") {
               return (
                 <div key={m.id} className="flex justify-end">
                   <div className="bg-[#4F8F88] text-white px-8 py-5 rounded-[26px] max-w-[420px] text-base leading-normal">
                     {m.message}
                   </div>
+                </div>
+              );
+            }
+
+            const facilitiesPayload = parseFacilitiesMessage(m.message);
+            if (facilitiesPayload) {
+              return (
+                <div key={m.id} className="flex justify-start">
+                  <HealthCareFacilitiesMessage
+                    className="max-w-[620px]"
+                    message={facilitiesPayload.header}
+                    facilities={facilitiesPayload.facilities as unknown as HealthCareFacility[]}
+                    showActions={false}
+                  />
                 </div>
               );
             }

@@ -27,13 +27,17 @@ export default function HealthCareFacilitiesMessage({
   message,
   facilities,
   onArrangeRide,
+  showActions = true,
+  className,
 }: {
   message: string;
   facilities: HealthCareFacility[];
   onArrangeRide?: (healthCareFacilityId: string) => void;
+  showActions?: boolean;
+  className?: string;
 }) {
   return (
-    <div className="max-w-[345px]">
+    <div className={className || "max-w-[345px]"}>
       <p className="text-[#0B2220] text-base font-normal leading-normal whitespace-pre-wrap break-words mb-4">
         {message}
       </p>
@@ -75,37 +79,39 @@ export default function HealthCareFacilitiesMessage({
                 )}
               </div>
 
-              <div className="flex gap-3 mt-3">
-                <button
-                  type="button"
-                  onClick={() => facilityId && onArrangeRide?.(facilityId)}
-                  disabled={!facilityId || !onArrangeRide}
-                  className={
-                    facilityId && onArrangeRide
-                      ? "flex-1 inline-flex items-center justify-center h-10 rounded-full bg-[#E0EEEC] text-[#2D8E86] text-sm font-medium hover:bg-[#D0DEDC] transition-colors"
-                      : "flex-1 inline-flex items-center justify-center h-10 rounded-full bg-[#F3FAF9] text-[#9CA3AF] text-sm font-medium cursor-not-allowed"
-                  }
-                >
-                  Arrange a ride
-                </button>
-
-                {tel ? (
-                  <a
-                    href={`tel:${tel}`}
-                    className="flex-1 inline-flex items-center justify-center h-10 rounded-full bg-[#F3FAF9] text-[#2D8E86] text-sm font-medium hover:bg-[#E0EEEC] transition-colors"
-                  >
-                    Call Now
-                  </a>
-                ) : (
+              {showActions && (
+                <div className="flex gap-3 mt-3">
                   <button
                     type="button"
-                    disabled
-                    className="flex-1 inline-flex items-center justify-center h-10 rounded-full bg-[#F3FAF9] text-[#9CA3AF] text-sm font-medium cursor-not-allowed"
+                    onClick={() => facilityId && onArrangeRide?.(facilityId)}
+                    disabled={!facilityId || !onArrangeRide}
+                    className={
+                      facilityId && onArrangeRide
+                        ? "flex-1 inline-flex items-center justify-center h-10 rounded-full bg-[#E0EEEC] text-[#2D8E86] text-sm font-medium hover:bg-[#D0DEDC] transition-colors"
+                        : "flex-1 inline-flex items-center justify-center h-10 rounded-full bg-[#F3FAF9] text-[#9CA3AF] text-sm font-medium cursor-not-allowed"
+                    }
                   >
-                    Call Now
+                    Arrange a ride
                   </button>
-                )}
-              </div>
+
+                  {tel ? (
+                    <a
+                      href={`tel:${tel}`}
+                      className="flex-1 inline-flex items-center justify-center h-10 rounded-full bg-[#F3FAF9] text-[#2D8E86] text-sm font-medium hover:bg-[#E0EEEC] transition-colors"
+                    >
+                      Call Now
+                    </a>
+                  ) : (
+                    <button
+                      type="button"
+                      disabled
+                      className="flex-1 inline-flex items-center justify-center h-10 rounded-full bg-[#F3FAF9] text-[#9CA3AF] text-sm font-medium cursor-not-allowed"
+                    >
+                      Call Now
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
           );
         })}
