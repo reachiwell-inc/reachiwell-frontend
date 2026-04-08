@@ -1,0 +1,380 @@
+"use client";
+
+import Image from "next/image";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import UserMenu from "@/components/UserMenu";
+import { useTriageSocket } from "@/lib/useTriageSocket";
+import TypingDots from "@/components/TypingDots";
+import { isLocationInput } from "@/lib/locationInput";
+import HealthCareFacilitiesMessage, { type HealthCareFacility } from "@/components/HealthCareFacilitiesMessage";
+import HelpGettingThereSection from "@/components/HelpGettingThereSection";
+
+type ChatMessage = {
+  id: string;
+  type: "user" | "system";
+  content?: string;
+  kind?: "text" | "facilities" | "yesno";
+  facilities?: HealthCareFacility[];
+  yesNoState?: "pending" | "answered";
+};
+
+type FindHealthCareCenterPayload = {
+  data?: string;
+  message?: string;
+  healthcareFacilities?: HealthCareFacility[];
+};
+
+function isFindHealthCareCenterPayload(raw: unknown): raw is FindHealthCareCenterPayload {
+  return !!raw && typeof raw === "object" && Array.isArray((raw as any).healthcareFacilities);
+}
+
+function makeMessageId() {
+  return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
+export default function CheckSymptomsPage() {
+  const router = useRouter();
+  const [message, setMessage] = useState("");
+  const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([]);
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [hasSentSymptoms, setHasSentSymptoms] = useState(false);
+  const [isWaitingForResponse, setIsWaitingForResponse] = useState(false);
+
+  const { emitTriage, emitFindHealthCareCenter, emitBookTransportation, emitEscalate } = useTriageSocket({
+    onMessage: (text, raw) => {
+      if (isFindHealthCareCenterPayload(raw)) {
+        const msg = raw.data || raw.message || "Here are the best options for you right now:";
+        const facilities = raw.healthcareFacilities || [];
+        setChatMessages((prev) => [
+          ...prev,
+          { id: makeMessageId(), type: "system", kind: "facilities", facilities, content: msg },
+        ]);
+        setIsWaitingForResponse(false);
+        return;
+      }
+
+      if (raw && typeof raw === "object" && (raw as any).category === "two") {
+        setChatMessages((prev) => [
+          ...prev,
+          { id: makeMessageId(), type: "system", kind: "yesno", content: text, yesNoState: "pending" },
+        ]);
+        setIsWaitingForResponse(false);
+        return;
+      }
+
+      setChatMessages((prev) => [...prev, { id: makeMessageId(), type: "system", kind: "text", content: text }]);
+      setIsWaitingForResponse(false);
+    },
+    onError: (text) => {
+      setChatMessages((prev) => [...prev, { id: makeMessageId(), type: "system", kind: "text", content: text }]);
+      setIsWaitingForResponse(false);
+    },
+  });
+
+  const symptoms = [
+    "Tooth pain",
+    "Fever",
+    "Cough",
+    "Sore throat",
+    "Anxiety/stress",
+    "Medication refill"
+  ];
+
+  const toggleSymptom = (symptom: string) => {
+    setSelectedSymptoms(prev =>
+      prev.includes(symptom)
+        ? prev.filter(s => s !== symptom)
+        : [...prev, symptom]
+    );
+  };
+
+  // Get the input value: selected symptoms + any typed text (space-separated)
+  const getInputValue = () => {
+    if (selectedSymptoms.length > 0) {
+      // Join with space, not comma
+      const symptomsText = selectedSymptoms.join(" ");
+      // If user has typed something additional, append it
+      if (message && !selectedSymptoms.some(s => message.includes(s))) {
+        return `${symptomsText} ${message}`;
+      }
+      return symptomsText;
+    }
+    return message;
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.value;
+    // Build the expected selected symptoms text (space-separated)
+    const expectedSelectedText = selectedSymptoms.join(" ");
+    
+    // If the input starts with selected symptoms, extract the new typed part
+    if (selectedSymptoms.length > 0 && newValue.startsWith(expectedSelectedText)) {
+      const typedPart = newValue.slice(expectedSelectedText.length).trim();
+      setMessage(typedPart);
+    } else {
+      // User is editing the whole field or no symptoms selected
+      setMessage(newValue);
+      // Clear selected symptoms if user manually edits and removes them
+      if (selectedSymptoms.length > 0 && !newValue.includes(expectedSelectedText)) {
+        setSelectedSymptoms([]);
+      }
+    }
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const inputValue = getInputValue();
+    const trimmed = inputValue.trim();
+    if (trimmed) {
+      setIsWaitingForResponse(true);
+      const ok = isLocationInput(trimmed) ? emitFindHealthCareCenter(trimmed) : emitTriage(trimmed);
+      if (!ok) setIsWaitingForResponse(false);
+
+      // Add user message to chat
+      setChatMessages(prev => [...prev, { id: makeMessageId(), type: "user", content: trimmed }]);
+      
+      // Track if symptoms have been sent
+      if (!hasSentSymptoms) {
+        setHasSentSymptoms(true);
+      }
+      
+      // Reset after submission
+      setMessage("");
+      setSelectedSymptoms([]);
+    }
+  };
+
+  const handleYesNo = (messageId: string, choice: "yes" | "no") => {
+    setChatMessages((prev) => {
+      const next = prev.map((m) =>
+        m.id === messageId && m.kind === "yesno" ? { ...m, yesNoState: "answered" as const } : m
+      );
+
+      const userLabel = choice === "yes" ? "Yes" : "No";
+      const followUp =
+        choice === "yes"
+          ? "Please enter your postal code or address so I can direct you to the appropriate healthcare facility around you."
+          : "Thanks for using our service. Do you need anything else I can help with?";
+
+      return [
+        ...next,
+        { id: makeMessageId(), type: "user", content: userLabel },
+        { id: makeMessageId(), type: "system", kind: "text", content: followUp },
+      ];
+    });
+  };
+
+  return (
+    <div className="flex flex-col w-full min-h-screen bg-white">
+      {/* Header with Logo and User Icon */}
+      <header className="flex items-center justify-between px-6 py-4 w-full border-b border-[#E0EEEC]">
+      <Link href="/" className="flex items-center gap-1 hover:opacity-80 transition-opacity">
+          <Image
+            src="/images/reachiwell-logo.png"
+            alt="ReachiWell Logo"
+            width={40}
+            height={40}
+            className="object-contain"
+          />
+          <span className="text-[#0B2220] text-base font-medium leading-[1.275]">ReachiWell</span>
+        </Link>
+        <UserMenu />
+      </header>
+
+      {/* Navigation Bar */}
+      <div className="flex items-center gap-4 px-6 py-4 w-full">
+        <div className="flex items-center gap-4 max-w-[345px] mx-auto w-full">
+          <button
+            onClick={() => router.back()}
+            className="w-6 h-6 flex items-center justify-center"
+            aria-label="Go back"
+          >
+            <Image
+              src="/icons/arrow-left.svg"
+              alt="Arrow Left Icon"
+              width={24}
+              height={24}
+              className="object-contain"
+            />
+          </button>
+          <h1 className="text-[#333333] text-base font-semibold leading-[1.275]">
+            Check your symptoms
+          </h1>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="flex-1 overflow-y-auto px-6 py-8 pb-[120px]">
+        <div className="flex flex-col max-w-[345px] mx-auto">
+          {/* Chat Messages */}
+          {chatMessages.length > 0 && (
+            <div className="flex flex-col gap-4 mb-6">
+              {chatMessages.map((msg) => (
+                <div
+                  key={msg.id}
+                  className={`flex ${msg.type === "user" ? "justify-end" : "justify-start"}`}
+                >
+                  {msg.type === "user" ? (
+                    <div className="bg-[#599891] text-white px-4 py-3 rounded-full rounded-br-sm max-w-[80%]">
+                      <p className="text-base font-normal leading-normal whitespace-pre-wrap wrap-break-word">
+                        {msg.content}
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="max-w-[80%]">
+                      {msg.kind === "facilities" && msg.facilities ? (
+                        <>
+                          <HealthCareFacilitiesMessage
+                            message={msg.content || ""}
+                            facilities={msg.facilities}
+                            onArrangeRide={(healthCareFacilityId) => {
+                              emitBookTransportation(healthCareFacilityId);
+                            }}
+                          />
+                          <HelpGettingThereSection
+                            onSelect={(action) => {
+                              const label =
+                                action === "ride"
+                                  ? "Yes, arrange a ride"
+                                  : action === "directions"
+                                    ? "Help me with directions"
+                                    : action === "volunteer"
+                                      ? "Speak with a ReachiWell volunteer"
+                                      : "No, I’ll get there myself";
+                              setChatMessages((prev) => [...prev, { id: makeMessageId(), type: "user", content: label }]);
+
+                              if (action === "volunteer") {
+                                setIsWaitingForResponse(true);
+                                const ok = emitEscalate({ action: "volunteer" });
+                                if (!ok) setIsWaitingForResponse(false);
+                              }
+                            }}
+                          />
+                        </>
+                      ) : msg.kind === "yesno" ? (
+                        <div className="bg-[#F8F8F8] border border-[#E0EEEC] rounded-2xl px-4 py-3">
+                          <p className="text-[#4F4F4F] text-base font-normal leading-normal whitespace-pre-wrap break-words">
+                            {msg.content}
+                          </p>
+                          <div className="flex items-center gap-4 mt-3">
+                            <button
+                              type="button"
+                              disabled={msg.yesNoState === "answered"}
+                              onClick={() => handleYesNo(msg.id, "yes")}
+                              className="flex-1 bg-white border border-[#E0EEEC] rounded-full px-4 py-2 text-[#1E3330] text-base font-medium leading-normal flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#EFF6F6]"
+                            >
+                              <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                  d="M16.667 5L7.5 14.167 3.333 10"
+                                  stroke="#16A34A"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                />
+                              </svg>
+                              Yes
+                            </button>
+                            <button
+                              type="button"
+                              disabled={msg.yesNoState === "answered"}
+                              onClick={() => handleYesNo(msg.id, "no")}
+                              className="flex-1 bg-white border border-[#E0EEEC] rounded-full px-4 py-2 text-[#1E3330] text-base font-medium leading-normal flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#FEF2F2]"
+                            >
+                              <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                  d="M5 5L15 15M15 5L5 15"
+                                  stroke="#DC2626"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                />
+                              </svg>
+                              No
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <p className="text-[#4F4F4F] text-base font-normal leading-normal">
+                          {msg.content}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              ))}
+
+              {isWaitingForResponse && (
+                <div className="flex justify-start">
+                  <div className="max-w-[80%]">
+                    <TypingDots />
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Initial Prompt - Only show if no messages */}
+          {chatMessages.length === 0 && (
+            <>
+              {/* Main Heading */}
+              <h2 className="text-[#333333] text-xl leading-[1.275] mb-2">
+                Tell me what&apos;s going on
+              </h2>
+              <p className="text-[#4F4F4F] text-base font-normal leading-normal mb-6">
+                Type in your symptoms or pick from the list below:
+              </p>
+
+              {/* Symptom Chips */}
+              <div className="flex flex-wrap gap-4 mb-8">
+                {symptoms.map((symptom) => (
+                  <button
+                    key={symptom}
+                    onClick={() => toggleSymptom(symptom)}
+                    className={`px-4 py-2 rounded-full text-base font-normal leading-normal transition-colors ${
+                      selectedSymptoms.includes(symptom)
+                        ? "bg-[#EFF6F6] text-[#1E3330] font-medium border border-[#92C3BD]"
+                        : "bg-[#F8F8F8] text-[#545858] border border-[#F8F8F8] hover:bg-[#E0EEEC]"
+                    }`}
+                  >
+                    {symptom}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Input Field - Fixed 64px from bottom */}
+      <div className="px-6 pb-[64px]">
+        <div className="max-w-[345px] mx-auto">
+          <form onSubmit={handleSubmit} className="w-full relative">
+            <input
+              type="text"
+              value={getInputValue()}
+              onChange={handleInputChange}
+              placeholder={selectedSymptoms.length > 0 ? "" : "Ask me a question"}
+              className="w-full px-6 py-4 pr-14 rounded-[30px] border border-[#E7E7E7] bg-white text-[#0B2220] text-base font-normal focus:outline-none focus:border-[#2D8E86] focus:ring-2 focus:ring-[#2D8E86]/20 placeholder:text-[#9CA3AF]"
+            />
+            <button
+              type="submit"
+              className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center cursor-pointer"
+              aria-label="Send message"
+            >
+              <Image
+                src="/icons/send-message.svg"
+                alt="Send Message Icon"
+                width={40}
+                height={40}
+                className="object-contain"
+              />
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+}
+

@@ -1,35 +1,138 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import UserMenu from "@/components/UserMenu";
+import StartChatButton from "@/components/StartChatButton";
 
 interface HeaderProps {
   isMenuOpen: boolean;
   setIsMenuOpen: (open: boolean) => void;
   scrollToSection: (sectionId: string) => void;
+  loggedInAction?: "userMenu" | "startChat";
 }
 
-export default function Header({ isMenuOpen, setIsMenuOpen, scrollToSection }: HeaderProps) {
+export default function Header({
+  isMenuOpen,
+  setIsMenuOpen,
+  scrollToSection,
+  loggedInAction = "userMenu",
+}: HeaderProps) {
+  // IMPORTANT:
+  // Don't read localStorage during initial render (SSR vs client mismatch).
+  // Instead, render a stable "logged-out" UI until hydration, then sync auth.
+  const [hasHydrated, setHasHydrated] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    setHasHydrated(true);
+
+    const syncAuth = () => {
+      const token = localStorage.getItem("token");
+      setIsLoggedIn(!!token);
+    };
+
+    syncAuth();
+
+    const onStorage = (e: StorageEvent) => {
+      if (
+        !e.key ||
+        e.key === "token" ||
+        e.key === "userFirstName" ||
+        e.key === "userLastName" ||
+        e.key === "userEmail"
+      ) {
+        syncAuth();
+      }
+    };
+
+    const onAuth = () => syncAuth();
+
+    window.addEventListener("storage", onStorage);
+    window.addEventListener("reachiwell:auth", onAuth as EventListener);
+    return () => {
+      window.removeEventListener("storage", onStorage);
+      window.removeEventListener("reachiwell:auth", onAuth as EventListener);
+    };
+  }, []);
+
+  const showLoggedIn = hasHydrated && isLoggedIn;
+
   return (
     <>
       {/* Header */}
-      <header className="flex items-center justify-between px-6 py-4 w-full relative z-50">
-        <div className="flex items-center gap-1">
+      <header className="flex items-center justify-between px-6 py-4 w-full relative z-50 bg-[#F3FAF9]">
+        {/* Logo - Left */}
+        <Link href="/" className="flex items-center gap-1 cursor-pointer hover:opacity-80 transition-opacity">
           <Image
-            src="/images/logo-6d6ced.png"
+            src="/images/reachiwell-logo.png"
             alt="ReachiWell Logo"
             width={40}
             height={40}
             className="object-contain"
           />
           <span className="text-[#0B2220] text-base font-medium leading-[1.275]">ReachiWell</span>
+        </Link>
+
+        {/* Desktop Navigation - Center */}
+        <nav className="hidden md:flex items-center gap-8 absolute left-1/2 -translate-x-1/2">
+          <button
+            onClick={() => scrollToSection("how-it-works")}
+            className="text-[#0B2220] text-base font-normal leading-[1.275] hover:text-[#E87954] transition-colors cursor-pointer"
+          >
+            How it Works
+          </button>
+          <button
+            onClick={() => scrollToSection("about-us")}
+            className="text-[#0B2220] text-base font-normal leading-[1.275] hover:text-[#E87954] transition-colors cursor-pointer"
+          >
+            About Us
+          </button>
+          <button
+            onClick={() => scrollToSection("our-services")}
+            className="text-[#0B2220] text-base font-normal leading-[1.275] hover:text-[#E87954] transition-colors cursor-pointer"
+          >
+            Our Services
+          </button>
+        </nav>
+
+        {/* Desktop Action Buttons - Right */}
+        <div className="hidden md:flex items-center gap-6">
+          {showLoggedIn && loggedInAction === "startChat" ? (
+            <StartChatButton className="bg-[#E87954] text-white px-8 py-3 rounded-[30px] text-base font-semibold leading-[1.275] h-[44px] flex items-center justify-center hover:bg-[#d66a45] transition-colors cursor-pointer">
+              Start Chat
+            </StartChatButton>
+          ) : (
+            <UserMenu
+              loggedOutFallback={
+                <>
+                  <Link
+                    href="/login"
+                    className="text-[#0B2220] text-base font-normal leading-[1.275] hover:text-[#E87954] transition-colors"
+                  >
+                    Log In
+                  </Link>
+                  <Link
+                    href="/create-account"
+                    className="bg-[#E87954] text-white px-8 py-3 rounded-[30px] text-base font-semibold leading-[1.275] h-[44px] flex items-center justify-center hover:bg-[#d66a45] transition-colors cursor-pointer"
+                  >
+                    Sign Up
+                  </Link>
+                </>
+              }
+            />
+          )}
         </div>
-        <button 
+
+        {/* Mobile Hamburger Menu Button */}
+        <button
           onClick={() => setIsMenuOpen(!isMenuOpen)}
-          className="w-6 h-6 text-[#000000] z-50"
+          className="md:hidden w-6 h-6 text-[#000000] z-50"
           aria-label="Toggle menu"
         >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M3 12H21M3 6H21M3 18H21" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+            <path d="M3 12H21M3 6H21M3 18H21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
           </svg>
         </button>
       </header>
@@ -39,23 +142,23 @@ export default function Header({ isMenuOpen, setIsMenuOpen, scrollToSection }: H
         <div className="fixed inset-0 bg-[#F3FAF9] z-50 flex flex-col">
           {/* Menu Header with Logo and Close Button */}
           <div className="flex items-center justify-between px-6 py-4 w-full">
-            <div className="flex items-center gap-1">
+            <Link href="/" className="flex items-center gap-1 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => setIsMenuOpen(false)}>
               <Image
-                src="/images/logo-6d6ced.png"
+                src="/images/reachiwell-logo.png"
                 alt="ReachiWell Logo"
                 width={40}
                 height={40}
                 className="object-contain"
               />
               <span className="text-[#0B2220] text-base font-medium leading-[1.275]">ReachiWell</span>
-            </div>
-            <button 
+            </Link>
+            <button
               onClick={() => setIsMenuOpen(false)}
               className="w-6 h-6 text-[#000000] cursor-pointer"
               aria-label="Close menu"
             >
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </button>
           </div>
@@ -81,17 +184,39 @@ export default function Header({ isMenuOpen, setIsMenuOpen, scrollToSection }: H
               Our Services
             </button>
 
-            {/* Login and Signup */}
+            {/* Auth actions */}
             <div className="mt-auto pb-8 flex flex-col gap-4">
-              <a
-                href="#"
-                className="text-[#0B2220] text-base font-medium leading-[1.275] py-3 hover:text-[#E87954] transition-colors"
-              >
-                Login
-              </a>
-              <button className="bg-[#E87954] text-white px-6 py-3 rounded-[30px] text-base font-semibold leading-[1.275] w-full h-[60px] flex items-center justify-center hover:bg-[#d66a45] transition-colors cursor-pointer">
-                Sign Up
-              </button>
+              {!showLoggedIn ? (
+                <>
+                  <a
+                    href="/login"
+                    className="text-[#0B2220] text-base font-medium leading-[1.275] py-3 hover:text-[#E87954] transition-colors"
+                  >
+                    Login
+                  </a>
+                  <a
+                    href="/create-account"
+                    className="bg-[#E87954] text-white px-6 py-3 rounded-[30px] text-base font-semibold leading-[1.275] w-full h-[60px] flex items-center justify-center hover:bg-[#d66a45] transition-colors cursor-pointer"
+                  >
+                    Sign Up
+                  </a>
+                </>
+              ) : (
+                <>
+                  {loggedInAction === "startChat" ? (
+                    <StartChatButton className="bg-[#E87954] text-white px-6 py-3 rounded-[30px] text-base font-semibold leading-[1.275] w-full h-[60px] flex items-center justify-center hover:bg-[#d66a45] transition-colors cursor-pointer">
+                      Start Chat
+                    </StartChatButton>
+                  ) : (
+                    <a
+                      href="/chat"
+                      className="bg-[#E87954] text-white px-6 py-3 rounded-[30px] text-base font-semibold leading-[1.275] w-full h-[60px] flex items-center justify-center hover:bg-[#d66a45] transition-colors cursor-pointer"
+                    >
+                      Open Chat
+                    </a>
+                  )}
+                </>
+              )}
             </div>
           </div>
         </div>
