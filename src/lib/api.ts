@@ -26,7 +26,7 @@ import type {
   ResetPasswordResponse,
 } from "./api.types";
 
-const BASE_URL = "https://reachiwell-git-17355259644.europe-west1.run.app/v1";
+const BASE_URL = "https://apidev.reachiwell.ca/v1";
 
 export async function signup(data: SignupRequest): Promise<SignupResponse> {
   try {
@@ -44,11 +44,12 @@ export async function signup(data: SignupRequest): Promise<SignupResponse> {
       }),
     });
 
-    const responseData: SignupSuccessResponse | SignupErrorResponse = await response.json();
+    const responseData: SignupSuccessResponse | SignupErrorResponse =
+      await response.json();
 
     if (!response.ok) {
       const errorData = responseData as SignupErrorResponse;
-      
+
       // Handle validation errors (400) - message is an array
       if (response.status === 400 && Array.isArray(errorData.message)) {
         const errorMessages = errorData.message.join(", ");
@@ -59,12 +60,17 @@ export async function signup(data: SignupRequest): Promise<SignupResponse> {
           statusCode: errorData.statusCode,
         };
       }
-      
+
       // Handle other errors (409, etc.) - message is a string
       return {
         success: false,
-        message: typeof errorData.message === "string" ? errorData.message : undefined,
-        error: errorData.error || (typeof errorData.message === "string" ? errorData.message : "Signup failed. Please try again."),
+        message:
+          typeof errorData.message === "string" ? errorData.message : undefined,
+        error:
+          errorData.error ||
+          (typeof errorData.message === "string"
+            ? errorData.message
+            : "Signup failed. Please try again."),
         statusCode: errorData.statusCode,
       };
     }
@@ -80,12 +86,17 @@ export async function signup(data: SignupRequest): Promise<SignupResponse> {
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Network error. Please check your connection and try again.",
+      error:
+        error instanceof Error
+          ? error.message
+          : "Network error. Please check your connection and try again.",
     };
   }
 }
 
-export async function verifyEmail(data: VerifyEmailRequest): Promise<VerifyEmailResponse> {
+export async function verifyEmail(
+  data: VerifyEmailRequest,
+): Promise<VerifyEmailResponse> {
   try {
     const response = await fetch(`${BASE_URL}/users/auth/email/verification`, {
       method: "PATCH",
@@ -97,7 +108,8 @@ export async function verifyEmail(data: VerifyEmailRequest): Promise<VerifyEmail
       }),
     });
 
-    const responseData: VerifyEmailSuccessResponse | VerifyEmailErrorResponse = await response.json();
+    const responseData: VerifyEmailSuccessResponse | VerifyEmailErrorResponse =
+      await response.json();
 
     if (!response.ok) {
       const errorData = responseData as VerifyEmailErrorResponse;
@@ -120,7 +132,10 @@ export async function verifyEmail(data: VerifyEmailRequest): Promise<VerifyEmail
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Network error. Please check your connection and try again.",
+      error:
+        error instanceof Error
+          ? error.message
+          : "Network error. Please check your connection and try again.",
     };
   }
 }
@@ -138,7 +153,8 @@ export async function login(data: LoginRequest): Promise<LoginResponse> {
       }),
     });
 
-    const responseData: LoginSuccessResponse | LoginErrorResponse = await response.json();
+    const responseData: LoginSuccessResponse | LoginErrorResponse =
+      await response.json();
 
     if (!response.ok) {
       const errorData = responseData as LoginErrorResponse;
@@ -161,7 +177,10 @@ export async function login(data: LoginRequest): Promise<LoginResponse> {
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Network error. Please check your connection and try again.",
+      error:
+        error instanceof Error
+          ? error.message
+          : "Network error. Please check your connection and try again.",
     };
   }
 }
@@ -172,12 +191,14 @@ export async function logout(token: string): Promise<LogoutResponse> {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     });
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ message: "Logout failed" }));
+      const errorData = await response
+        .json()
+        .catch(() => ({ message: "Logout failed" }));
       return {
         success: false,
         message: errorData.message || "Logout failed",
@@ -186,7 +207,9 @@ export async function logout(token: string): Promise<LogoutResponse> {
       };
     }
 
-    const responseData = await response.json().catch(() => ({ message: "Logout successful" }));
+    const responseData = await response
+      .json()
+      .catch(() => ({ message: "Logout successful" }));
     return {
       success: true,
       message: responseData.message || "Logout successful",
@@ -194,12 +217,17 @@ export async function logout(token: string): Promise<LogoutResponse> {
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Network error. Please check your connection and try again.",
+      error:
+        error instanceof Error
+          ? error.message
+          : "Network error. Please check your connection and try again.",
     };
   }
 }
 
-export async function forgotPassword(data: ForgotPasswordRequest): Promise<ForgotPasswordResponse> {
+export async function forgotPassword(
+  data: ForgotPasswordRequest,
+): Promise<ForgotPasswordResponse> {
   try {
     const response = await fetch(`${BASE_URL}/users/auth/forgot-password`, {
       method: "POST",
@@ -211,7 +239,9 @@ export async function forgotPassword(data: ForgotPasswordRequest): Promise<Forgo
       }),
     });
 
-    const responseData: ForgotPasswordSuccessResponse | ForgotPasswordErrorResponse = await response.json();
+    const responseData:
+      | ForgotPasswordSuccessResponse
+      | ForgotPasswordErrorResponse = await response.json();
 
     if (!response.ok) {
       const errorData = responseData as ForgotPasswordErrorResponse;
@@ -234,21 +264,31 @@ export async function forgotPassword(data: ForgotPasswordRequest): Promise<Forgo
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Network error. Please check your connection and try again.",
+      error:
+        error instanceof Error
+          ? error.message
+          : "Network error. Please check your connection and try again.",
     };
   }
 }
 
-export async function validateResetCode(data: ValidateResetCodeRequest): Promise<ValidateResetCodeResponse> {
+export async function validateResetCode(
+  data: ValidateResetCodeRequest,
+): Promise<ValidateResetCodeResponse> {
   try {
-    const response = await fetch(`${BASE_URL}/users/auth/validate-reset-code/${data.passwordResetCode}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
+    const response = await fetch(
+      `${BASE_URL}/users/auth/validate-reset-code/${data.passwordResetCode}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
       },
-    });
+    );
 
-    const responseData: ValidateResetCodeSuccessResponse | ValidateResetCodeErrorResponse = await response.json();
+    const responseData:
+      | ValidateResetCodeSuccessResponse
+      | ValidateResetCodeErrorResponse = await response.json();
 
     if (!response.ok) {
       const errorData = responseData as ValidateResetCodeErrorResponse;
@@ -271,12 +311,17 @@ export async function validateResetCode(data: ValidateResetCodeRequest): Promise
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Network error. Please check your connection and try again.",
+      error:
+        error instanceof Error
+          ? error.message
+          : "Network error. Please check your connection and try again.",
     };
   }
 }
 
-export async function resetPassword(data: ResetPasswordRequest): Promise<ResetPasswordResponse> {
+export async function resetPassword(
+  data: ResetPasswordRequest,
+): Promise<ResetPasswordResponse> {
   try {
     const response = await fetch(`${BASE_URL}/users/auth/reset-password`, {
       method: "PATCH",
@@ -289,7 +334,9 @@ export async function resetPassword(data: ResetPasswordRequest): Promise<ResetPa
       }),
     });
 
-    const responseData: ResetPasswordSuccessResponse | ResetPasswordErrorResponse = await response.json();
+    const responseData:
+      | ResetPasswordSuccessResponse
+      | ResetPasswordErrorResponse = await response.json();
 
     if (!response.ok) {
       const errorData = responseData as ResetPasswordErrorResponse;
@@ -312,8 +359,10 @@ export async function resetPassword(data: ResetPasswordRequest): Promise<ResetPa
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Network error. Please check your connection and try again.",
+      error:
+        error instanceof Error
+          ? error.message
+          : "Network error. Please check your connection and try again.",
     };
   }
 }
-

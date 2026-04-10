@@ -3,9 +3,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { io, type Socket } from "socket.io-client";
 import Link from "next/link";
-import HealthCareFacilitiesMessage, { type HealthCareFacility } from "@/components/HealthCareFacilitiesMessage";
+import HealthCareFacilitiesMessage, {
+  type HealthCareFacility,
+} from "@/components/HealthCareFacilitiesMessage";
 
-const UPSTREAM_URL = "https://reachiwell-git-17355259644.europe-west1.run.app";
+const UPSTREAM_URL = "https://apidev.reachiwell.ca";
 
 type DisplayMessage = {
   id: string;
@@ -31,7 +33,11 @@ function makeId() {
   return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
 
-function StatusPill({ status }: { status: "Completed" | "In progress" | "Escalated" }) {
+function StatusPill({
+  status,
+}: {
+  status: "Completed" | "In progress" | "Escalated";
+}) {
   const styles =
     status === "Completed"
       ? "bg-[#E7F5EF] text-[#2F7A56]"
@@ -40,7 +46,9 @@ function StatusPill({ status }: { status: "Completed" | "In progress" | "Escalat
         : "bg-[#F9E7E7] text-[#C54747]";
 
   return (
-    <span className={`inline-flex items-center px-3 py-1 rounded-[10px] text-xs font-medium ${styles}`}>
+    <span
+      className={`inline-flex items-center px-3 py-1 rounded-[10px] text-xs font-medium ${styles}`}
+    >
       {status}
     </span>
   );
@@ -48,23 +56,52 @@ function StatusPill({ status }: { status: "Completed" | "In progress" | "Escalat
 
 function ArrowLeft() {
   return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M15 18L9 12L15 6" stroke="#161818" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    <svg
+      width="22"
+      height="22"
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M15 18L9 12L15 6"
+        stroke="#161818"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 }
 
 function PlusIcon() {
   return (
-    <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M10 4v12M4 10h12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 20 20"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M10 4v12M4 10h12"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
     </svg>
   );
 }
 
 function SendIcon() {
   return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg
+      width="22"
+      height="22"
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
       <path
         d="M22 2L11 13"
         stroke="#0B2220"
@@ -102,16 +139,24 @@ function safeJsonParse<T>(text: string): T | null {
   }
 }
 
-function parseFacilitiesMessage(text: string): { header: string; facilities: HealthCareFacilityLite[] } | null {
+function parseFacilitiesMessage(
+  text: string,
+): { header: string; facilities: HealthCareFacilityLite[] } | null {
   const t = text.trim();
   if (!t) return null;
 
   // Pattern A: JSON string: {"message":"...","healthcareFacilities":[...]}
   if (t.startsWith("{") && t.endsWith("}")) {
     const obj = safeJsonParse<any>(t);
-    const facilities = Array.isArray(obj?.healthcareFacilities) ? (obj.healthcareFacilities as HealthCareFacilityLite[]) : null;
+    const facilities = Array.isArray(obj?.healthcareFacilities)
+      ? (obj.healthcareFacilities as HealthCareFacilityLite[])
+      : null;
     if (facilities) {
-      const header = String(obj?.message || obj?.data || "Here are the best options for you right now:");
+      const header = String(
+        obj?.message ||
+          obj?.data ||
+          "Here are the best options for you right now:",
+      );
       return { header, facilities };
     }
   }
@@ -124,7 +169,9 @@ function parseFacilitiesMessage(text: string): { header: string; facilities: Hea
     const arr = safeJsonParse<any>(maybeArrayText);
     if (Array.isArray(arr)) {
       const rawHeader = t.slice(0, firstBracket).trim();
-      const header = rawHeader.replace(/:\s*$/, "") || "Here are the best options for you right now:";
+      const header =
+        rawHeader.replace(/:\s*$/, "") ||
+        "Here are the best options for you right now:";
       return { header, facilities: arr as HealthCareFacilityLite[] };
     }
   }
@@ -142,7 +189,9 @@ export default function ConversationDetailClient(props: {
   const { conversationId, title, status, roomName } = props;
   const [joined, setJoined] = useState(false);
   const [input, setInput] = useState("");
-  const [messages, setMessages] = useState<DisplayMessage[]>(props.initialMessages);
+  const [messages, setMessages] = useState<DisplayMessage[]>(
+    props.initialMessages,
+  );
 
   const socketRef = useRef<Socket | null>(null);
   const listEndRef = useRef<HTMLDivElement | null>(null);
@@ -243,7 +292,14 @@ export default function ConversationDetailClient(props: {
 
     setMessages((prev) => [
       ...prev,
-      { id: makeId(), message: text, sender: "admin", sentByAdmin: true, senderId: "admin", createdAt: new Date().toISOString() },
+      {
+        id: makeId(),
+        message: text,
+        sender: "admin",
+        sentByAdmin: true,
+        senderId: "admin",
+        createdAt: new Date().toISOString(),
+      },
     ]);
 
     setInput("");
@@ -255,7 +311,9 @@ export default function ConversationDetailClient(props: {
       <div className="mx-auto w-full max-w-[980px] flex flex-col min-h-[calc(100vh-140px)]">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-4">
-            <div className="text-[#161818] text-2xl font-semibold leading-[1.275]">{title}</div>
+            <div className="text-[#161818] text-2xl font-semibold leading-[1.275]">
+              {title}
+            </div>
             <StatusPill status={status} />
           </div>
 
@@ -308,7 +366,9 @@ export default function ConversationDetailClient(props: {
                   <HealthCareFacilitiesMessage
                     className="max-w-[620px]"
                     message={facilitiesPayload.header}
-                    facilities={facilitiesPayload.facilities as unknown as HealthCareFacility[]}
+                    facilities={
+                      facilitiesPayload.facilities as unknown as HealthCareFacility[]
+                    }
                     showActions={false}
                   />
                 </div>
@@ -356,4 +416,3 @@ export default function ConversationDetailClient(props: {
     </div>
   );
 }
-
