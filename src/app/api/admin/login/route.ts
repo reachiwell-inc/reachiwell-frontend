@@ -1,18 +1,21 @@
 import { NextResponse } from "next/server";
 
-const BASE_URL = "https://reachiwell-git-17355259644.europe-west1.run.app/v1";
+const BASE_URL = "https://apidev.reachiwell.ca/v1";
 const ADMIN_TOKEN_COOKIE = "rw_admin_token";
 
 export async function POST(req: Request) {
   try {
-    const body = (await req.json().catch(() => null)) as null | { email?: string; password?: string };
+    const body = (await req.json().catch(() => null)) as null | {
+      email?: string;
+      password?: string;
+    };
     const email = (body?.email || "").trim();
     const password = body?.password || "";
 
     if (!email || !password) {
       return NextResponse.json(
         { success: false, message: "Email and password are required." },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -34,7 +37,7 @@ export async function POST(req: Request) {
           error: upstreamJson?.error,
           statusCode: upstreamRes.status,
         },
-        { status: upstreamRes.status }
+        { status: upstreamRes.status },
       );
     }
 
@@ -42,7 +45,7 @@ export async function POST(req: Request) {
     if (!token || typeof token !== "string") {
       return NextResponse.json(
         { success: false, message: "Login succeeded but token is missing." },
-        { status: 502 }
+        { status: 502 },
       );
     }
 
@@ -64,9 +67,12 @@ export async function POST(req: Request) {
     return res;
   } catch (err) {
     return NextResponse.json(
-      { success: false, message: "Unexpected error. Please try again.", error: String(err) },
-      { status: 500 }
+      {
+        success: false,
+        message: "Unexpected error. Please try again.",
+        error: String(err),
+      },
+      { status: 500 },
     );
   }
 }
-

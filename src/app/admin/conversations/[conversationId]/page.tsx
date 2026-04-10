@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import ConversationDetailClient from "./ConversationDetailClient";
 
 const ADMIN_TOKEN_COOKIE = "rw_admin_token";
-const BASE_URL = "https://reachiwell-git-17355259644.europe-west1.run.app/v1";
+const BASE_URL = "https://apidev.reachiwell.ca/v1";
 
 type ConversationDetailsResponse = {
   message?: string;
@@ -32,7 +32,10 @@ type ConversationDetailsResponse = {
   customStatusCode?: number;
 };
 
-function mapStatus(status?: string, escalated?: boolean): "Completed" | "In progress" | "Escalated" {
+function mapStatus(
+  status?: string,
+  escalated?: boolean,
+): "Completed" | "In progress" | "Escalated" {
   if (escalated) return "Escalated";
   if ((status || "").toLowerCase() === "closed") return "Completed";
   return "In progress";
@@ -56,11 +59,14 @@ export default async function AdminConversationDetailPage({
 
   const { conversationId } = await params;
 
-  const upstreamRes = await fetch(`${BASE_URL}/admin/conversations/${conversationId}`, {
-    method: "GET",
-    headers: { Authorization: `Bearer ${token}` },
-    cache: "no-store",
-  });
+  const upstreamRes = await fetch(
+    `${BASE_URL}/admin/conversations/${conversationId}`,
+    {
+      method: "GET",
+      headers: { Authorization: `Bearer ${token}` },
+      cache: "no-store",
+    },
+  );
 
   if (upstreamRes.status === 401 || upstreamRes.status === 403) {
     redirect("/admin?next=/admin/dashboard&logout=1");
@@ -70,7 +76,9 @@ export default async function AdminConversationDetailPage({
     redirect("/admin/dashboard");
   }
 
-  const json = (await upstreamRes.json().catch(() => ({}))) as ConversationDetailsResponse;
+  const json = (await upstreamRes
+    .json()
+    .catch(() => ({}))) as ConversationDetailsResponse;
   const convo = json?.data?.conversation;
   const messages = (json?.data?.messages || []) as DisplayMessage[];
 
@@ -87,4 +95,3 @@ export default async function AdminConversationDetailPage({
     />
   );
 }
-

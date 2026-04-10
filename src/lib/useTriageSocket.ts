@@ -3,7 +3,7 @@
 import { useEffect, useRef, useCallback } from "react";
 import { io, type Socket } from "socket.io-client";
 
-const UPSTREAM_URL = "https://reachiwell-git-17355259644.europe-west1.run.app";
+const UPSTREAM_URL = "https://apidev.reachiwell.ca";
 const ROOM_KEY = "reachiwell:room_name";
 
 function getOrCreateRoomName() {
@@ -12,7 +12,9 @@ function getOrCreateRoomName() {
 
   const firstName = (localStorage.getItem("userFirstName") || "").trim();
   const email = (localStorage.getItem("userEmail") || "").trim();
-  const prefix = (firstName || email.split("@")[0] || "usr").slice(0, 3).toLowerCase() || "usr";
+  const prefix =
+    (firstName || email.split("@")[0] || "usr").slice(0, 3).toLowerCase() ||
+    "usr";
 
   const roomName = `${prefix}-${Date.now()}`;
   sessionStorage.setItem(ROOM_KEY, roomName);
@@ -35,19 +37,34 @@ function payloadToText(payload: unknown) {
 
   // findHealthCareCenter commonly returns:
   // { message: string, healthcareFacilities: Array<{ name?, address?, ... }> }
-  const facilities = Array.isArray(maybeObj?.healthcareFacilities) ? maybeObj.healthcareFacilities : null;
+  const facilities = Array.isArray(maybeObj?.healthcareFacilities)
+    ? maybeObj.healthcareFacilities
+    : null;
   if (facilities) {
-    const header = asText(maybeObj?.data) || asText(maybeObj?.message) || "Here are some healthcare facilities you can visit:";
+    const header =
+      asText(maybeObj?.data) ||
+      asText(maybeObj?.message) ||
+      "Here are some healthcare facilities you can visit:";
     const lines = facilities
       .map((f: any, idx: number) => {
-        const label = f?.name || f?.address || f?.location || f?._id || `Facility ${idx + 1}`;
+        const label =
+          f?.name ||
+          f?.address ||
+          f?.location ||
+          f?._id ||
+          `Facility ${idx + 1}`;
         return `- ${String(label)}`;
       })
       .join("\n");
     return lines ? `${header}\n${lines}` : String(header);
   }
 
-  return asText(maybeObj?.data) || asText(maybeObj?.message) || asText(maybeObj?.text) || asText(payload);
+  return (
+    asText(maybeObj?.data) ||
+    asText(maybeObj?.message) ||
+    asText(maybeObj?.text) ||
+    asText(payload)
+  );
 }
 
 type UseTriageSocketOptions = {
@@ -178,6 +195,10 @@ export function useTriageSocket(options: UseTriageSocketOptions = {}) {
     return true;
   }, []);
 
-  return { emitTriage, emitFindHealthCareCenter, emitBookTransportation, emitEscalate };
+  return {
+    emitTriage,
+    emitFindHealthCareCenter,
+    emitBookTransportation,
+    emitEscalate,
+  };
 }
-
