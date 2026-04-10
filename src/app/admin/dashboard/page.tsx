@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import DashboardClient, { type ConversationRow } from "./DashboardClient";
 
 const ADMIN_TOKEN_COOKIE = "rw_admin_token";
-const BASE_URL = "https://reachiwell-git-17355259644.europe-west1.run.app/v1";
+const BASE_URL = "https://apidev.reachiwell.ca/v1";
 
 type ConversationsApiResponse = {
   message?: string;
@@ -26,12 +26,22 @@ function formatDateParts(iso?: string) {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return { date: "—", time: "—" };
 
-  const date = d.toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" });
-  const time = d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
+  const date = d.toLocaleDateString("en-US", {
+    month: "short",
+    day: "2-digit",
+    year: "numeric",
+  });
+  const time = d.toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
   return { date, time };
 }
 
-function mapStatus(status?: string, escalated?: boolean): "Completed" | "In progress" | "Escalated" {
+function mapStatus(
+  status?: string,
+  escalated?: boolean,
+): "Completed" | "In progress" | "Escalated" {
   if (escalated) return "Escalated";
   if ((status || "").toLowerCase() === "closed") return "Completed";
   return "In progress";
@@ -60,7 +70,9 @@ export default async function AdminDashboardPage() {
       redirect("/admin?next=/admin/dashboard&logout=1");
     }
 
-    const json = (await upstreamRes.json().catch(() => ({}))) as ConversationsApiResponse;
+    const json = (await upstreamRes
+      .json()
+      .catch(() => ({}))) as ConversationsApiResponse;
     const conversations = json?.data?.conversations || [];
 
     rows = conversations.map((c) => {
@@ -76,7 +88,8 @@ export default async function AdminDashboardPage() {
         date,
         time,
         status: mapStatus(c.status, c.escalated),
-        rating: typeof c.rating?.rating === "number" ? c.rating.rating : undefined,
+        rating:
+          typeof c.rating?.rating === "number" ? c.rating.rating : undefined,
       };
     });
   } catch {
@@ -85,4 +98,3 @@ export default async function AdminDashboardPage() {
 
   return <DashboardClient rows={rows} />;
 }
-

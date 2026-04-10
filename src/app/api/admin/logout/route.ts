@@ -1,13 +1,17 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
-const BASE_URL = "https://reachiwell-git-17355259644.europe-west1.run.app/v1";
+const BASE_URL = "https://apidev.reachiwell.ca/v1";
 const ADMIN_TOKEN_COOKIE = "rw_admin_token";
 
 export async function POST() {
   const token = (await cookies()).get(ADMIN_TOKEN_COOKIE)?.value || "";
 
-  let responseBody: { success: boolean; message?: string; customStatusCode?: number } = { success: true };
+  let responseBody: {
+    success: boolean;
+    message?: string;
+    customStatusCode?: number;
+  } = { success: true };
 
   // Best-effort upstream logout call.
   if (token) {
@@ -46,4 +50,3 @@ export async function POST() {
   });
   return res;
 }
-
