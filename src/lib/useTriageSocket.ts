@@ -95,9 +95,13 @@ export function useTriageSocket(options: UseTriageSocketOptions = {}) {
     const roomName = getOrCreateRoomName();
 
     const socket = io(UPSTREAM_URL, {
-      transports: ["websocket"],
-      upgrade: false,
-      timeout: 20000,
+      // Allow fallback for environments where websocket-only fails.
+      transports: ["polling", "websocket"],
+      timeout: 30000,
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 500,
+      reconnectionDelayMax: 3000,
       auth: {
         auth: token,
         "room-name": roomName,
@@ -120,6 +124,16 @@ export function useTriageSocket(options: UseTriageSocketOptions = {}) {
       onErrorRef.current?.(text, err);
     };
 
+    const handleException = (payload: unknown) => {
+      // Backend sometimes emits: { status: "error", message: "Internal server error", cause: {...} }
+      const maybeObj = payload as any;
+      const msg =
+        (typeof maybeObj?.message === "string" && maybeObj.message) ||
+        (typeof maybeObj?.data === "string" && maybeObj.data) ||
+        String(payload);
+      onErrorRef.current?.(msg, payload);
+    };
+
     socket.on("triage", handleMessage);
     socket.on("Triage", handleMessage);
     socket.on("findHealthCareCenter", handleMessage);
@@ -129,6 +143,8 @@ export function useTriageSocket(options: UseTriageSocketOptions = {}) {
     socket.on("escalate", handleMessage);
     socket.on("Escalate", handleMessage);
     socket.on("connect_error", handleConnectError);
+    socket.on("exception", handleException);
+    socket.on("Exception", handleException);
 
     return () => {
       socket.off("triage", handleMessage);
@@ -140,6 +156,8 @@ export function useTriageSocket(options: UseTriageSocketOptions = {}) {
       socket.off("escalate", handleMessage);
       socket.off("Escalate", handleMessage);
       socket.off("connect_error", handleConnectError);
+      socket.off("exception", handleException);
+      socket.off("Exception", handleException);
       socket.disconnect();
       socketRef.current = null;
     };
@@ -152,8 +170,9 @@ export function useTriageSocket(options: UseTriageSocketOptions = {}) {
     const socket = socketRef.current;
     if (!socket) return false;
 
-    // Postman shows the server expects plain-text payload (e.g. "cough")
-    socket.emit("triage", trimmed);
+    // Backend contract (per Postman/dev server): triage expects { data: string }
+    // Sending a plain string can trigger backend "Internal server error".
+    socket.emit("triage", { data: trimmed });
     return true;
   }, []);
 
@@ -164,7 +183,7 @@ export function useTriageSocket(options: UseTriageSocketOptions = {}) {
     const socket = socketRef.current;
     if (!socket) return false;
 
-    // Per docs: event name is findHealthCareCenter and body is JSON { address: "..." }
+    // Backend contract (per Postman): { address: "..." }
     socket.emit("findHealthCareCenter", { address: trimmed });
     return true;
   }, []);
