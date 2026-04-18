@@ -214,9 +214,13 @@ export default function ConversationDetailClient(props: {
     if (!adminToken) return;
 
     const socket = io(UPSTREAM_URL, {
-      transports: ["websocket"],
-      upgrade: false,
-      timeout: 20000,
+      // Allow fallback for environments where websocket-only fails.
+      transports: ["polling", "websocket"],
+      timeout: 30000,
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 500,
+      reconnectionDelayMax: 3000,
       auth: {
         auth: adminToken,
         "room-name": roomName,
